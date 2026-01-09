@@ -141,7 +141,7 @@ export default function ProjectDetailPage() {
                                         borderRadius: 'var(--radius-md)',
                                     }}
                                 >
-                                    <label className="flex items-center gap-3" style={{ cursor: 'pointer' }}>
+                                    <label className="flex items-center" style={{ cursor: 'pointer', gap: '12px' }}>
                                         <input
                                             type="checkbox"
                                             checked={task.completed}
@@ -150,6 +150,7 @@ export default function ProjectDetailPage() {
                                                 width: '18px',
                                                 height: '18px',
                                                 accentColor: 'var(--color-accent-primary)',
+                                                flexShrink: 0,
                                             }}
                                         />
                                         <span style={{
@@ -183,9 +184,9 @@ export default function ProjectDetailPage() {
                             <p className="text-muted text-sm">Status</p>
                             <span
                                 className={`badge ${project.status === 'active' ? 'badge-success' :
-                                        project.status === 'paused' ? 'badge-warning' :
-                                            project.status === 'completed' ? 'badge-primary' :
-                                                'badge-secondary'
+                                    project.status === 'paused' ? 'badge-warning' :
+                                        project.status === 'completed' ? 'badge-primary' :
+                                            'badge-secondary'
                                     }`}
                             >
                                 {project.status.charAt(0).toUpperCase() + project.status.slice(1)}

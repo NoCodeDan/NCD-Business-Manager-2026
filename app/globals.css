@@ -255,6 +255,17 @@ h6 {
   box-shadow: var(--shadow-md);
 }
 
+.project-card-link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.project-card-link:hover {
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+  transform: translateY(-1px);
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -475,6 +486,53 @@ h6 {
 .badge-primary {
   background: rgba(99, 102, 241, 0.15);
   color: var(--color-accent-primary);
+}
+
+/* ==========================================
+   Status Pills (Dashboard Visualizations)
+   ========================================== */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-pill-success {
+  color: var(--color-accent-success);
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.status-pill-warning {
+  color: var(--color-accent-warning);
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.status-pill-danger {
+  color: var(--color-accent-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.status-pill-primary {
+  color: var(--color-accent-primary);
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.1);
 }
 
 /* ==========================================
