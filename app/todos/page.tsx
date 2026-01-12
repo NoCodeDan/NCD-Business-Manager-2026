@@ -113,10 +113,9 @@ export default function TodosPage() {
         return (
             <div key={todo.id}>
                 <div
-                    className={`todo-item ${todo.completed ? 'completed' : ''} ${isSubtask ? 'subtask' : ''}`}
+                    className={`todo-item ${todo.completed ? 'completed' : ''} ${isSubtask ? 'subtask' : ''} ${!isSubtask && hasSubtasks && isExpanded ? 'has-subtasks' : ''}`}
                     style={{
                         background: !isSubtask && index % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent',
-                        paddingLeft: isSubtask ? 'calc(var(--space-5) + 28px)' : 'var(--space-5)',
                     }}
                 >
                     {/* Expand/Collapse for parent tasks */}
@@ -242,14 +241,13 @@ export default function TodosPage() {
                 </div>
 
                 {/* Subtasks */}
-                {!isSubtask && isExpanded && (
-                    <>
+                {!isSubtask && isExpanded && (subtasks.length > 0 || addingSubtaskTo === todo.id) && (
+                    <div className="todo-subtasks">
                         {subtasks.map(subtask => renderTodoItem(subtask, true))}
 
                         {/* Add subtask input */}
                         {addingSubtaskTo === todo.id && (
-                            <div className="todo-item subtask" style={{ paddingLeft: 'calc(var(--space-5) + 28px)' }}>
-                                <div style={{ width: '18px' }} />
+                            <div className="todo-add-subtask">
                                 <input
                                     type="text"
                                     className="form-input"
@@ -277,7 +275,7 @@ export default function TodosPage() {
                                 </button>
                             </div>
                         )}
-                    </>
+                    </div>
                 )}
             </div>
         );
