@@ -4571,6 +4571,20 @@ table tbody tr:nth-child(even) {
   cursor: grabbing;
 }
 
+.todo-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.todo-item:hover .todo-drag-handle {
+  opacity: 1;
+}
+
 .todo-checkbox {
   width: 22px;
   height: 22px;
