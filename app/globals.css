@@ -506,12 +506,35 @@ h6 {
 
 .form-input::placeholder,
 .form-textarea::placeholder {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .form-textarea {
   min-height: 120px;
   resize: vertical;
+}
+
+/* Standalone input class for search boxes and other inputs */
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  transition: all var(--transition-fast);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.input::placeholder {
+  color: var(--color-text-secondary);
 }
 
 .form-select {
@@ -3090,10 +3113,11 @@ h6 {
   color: var(--color-text-primary);
   font-size: var(--text-sm);
   width: 180px;
+  padding: var(--space-2) 0;
 }
 
 .crm-search input::placeholder {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 /* Contact List */
