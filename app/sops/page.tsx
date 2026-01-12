@@ -143,19 +143,24 @@ export default function SOPsPage() {
             ) : (
                 <div className="grid grid-2">
                     {filteredSOPs.map(sop => (
-                        <div key={sop.id} className="card">
+                        <div
+                            key={sop.id}
+                            className="card sop-card"
+                            onClick={() => window.location.href = `/sops/${sop.id}`}
+                            style={{ cursor: 'pointer' }}
+                        >
                             <div className="card-header">
                                 <div>
                                     <h3 className="card-title">{sop.title}</h3>
                                     <span className="badge badge-primary mt-2">{sop.category}</span>
                                 </div>
-                                <div className="flex gap-2">
-                                    <button className="btn-icon" onClick={() => openModal(sop.id)}>
+                                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                    <button className="btn-icon" onClick={() => openModal(sop.id)} title="Edit">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                                         </svg>
                                     </button>
-                                    <button className="btn-icon" onClick={() => handleDelete(sop.id)}>
+                                    <button className="btn-icon" onClick={() => handleDelete(sop.id)} title="Delete">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M3 6h18" />
                                             <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
@@ -164,17 +169,12 @@ export default function SOPsPage() {
                                     </button>
                                 </div>
                             </div>
-                            <p className="text-muted text-sm" style={{
-                                display: '-webkit-box',
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden'
-                            }}>
+                            <p className="sop-card-preview">
                                 {sop.content}
                             </p>
                             {sop.tags.length > 0 && (
                                 <div className="flex gap-2 mt-4" style={{ flexWrap: 'wrap' }}>
-                                    {sop.tags.map(tag => (
+                                    {sop.tags.slice(0, 3).map(tag => (
                                         <span key={tag} className="badge badge-secondary" style={{
                                             background: 'var(--color-bg-tertiary)',
                                             color: 'var(--color-text-secondary)'
@@ -182,6 +182,14 @@ export default function SOPsPage() {
                                             {tag}
                                         </span>
                                     ))}
+                                    {sop.tags.length > 3 && (
+                                        <span className="badge badge-secondary" style={{
+                                            background: 'var(--color-bg-tertiary)',
+                                            color: 'var(--color-text-muted)'
+                                        }}>
+                                            +{sop.tags.length - 3} more
+                                        </span>
+                                    )}
                                 </div>
                             )}
                             <p className="text-muted text-sm mt-4">
