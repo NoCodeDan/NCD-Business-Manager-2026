@@ -128,6 +128,74 @@ const MOCK_CONTACTS: ContactDossier[] = [
         followUpDate: new Date(2026, 0, 10), // Overdue (yesterday)
         followUpNote: 'Check in about design collaboration',
     },
+    // Partner Contacts
+    {
+        id: '5',
+        email: 'james@adalo.com',
+        name: 'James',
+        bio: 'Partnership Lead at Adalo. Passionate about empowering creators with no-code tools and building strategic partnerships in the no-code ecosystem.',
+        location: 'Remote',
+        company: {
+            name: 'Adalo',
+            role: 'Partnership Lead',
+            website: 'https://adalo.com',
+            industry: 'No-Code Platform',
+        },
+        socialProfiles: [
+            { platform: 'LinkedIn', url: 'https://linkedin.com/in/james-adalo', username: 'james-adalo' },
+        ],
+        recentActivity: [
+            'Launched partner program 2.0',
+            'Spoke at No-Code Summit 2025',
+        ],
+        createdAt: new Date(2026, 0, 12),
+        status: 'enriched',
+    },
+    {
+        id: '6',
+        email: 'jason@adalo.com',
+        name: 'Jason Gilmore',
+        bio: 'Partnerships team member at Adalo. Focused on growing the Adalo ecosystem through strategic collaborations with educators and content creators.',
+        location: 'Remote',
+        company: {
+            name: 'Adalo',
+            role: 'Partnerships',
+            website: 'https://adalo.com',
+            industry: 'No-Code Platform',
+        },
+        socialProfiles: [
+            { platform: 'LinkedIn', url: 'https://linkedin.com/in/jasongilmore', username: 'jasongilmore' },
+        ],
+        recentActivity: [
+            'Onboarded 50+ new partner creators',
+            'Coordinated Adalo community event',
+        ],
+        createdAt: new Date(2026, 0, 12),
+        status: 'enriched',
+    },
+    {
+        id: '7',
+        email: 'kari@teamtreehouse.com',
+        name: 'Kari Brooks',
+        bio: 'Partnerships lead at Treehouse. Dedicated to making tech education accessible through innovative partnerships and collaboration with industry experts.',
+        location: 'Portland, OR',
+        company: {
+            name: 'Treehouse',
+            role: 'Partnerships',
+            website: 'https://teamtreehouse.com',
+            industry: 'EdTech / Online Learning',
+        },
+        socialProfiles: [
+            { platform: 'LinkedIn', url: 'https://linkedin.com/in/karibrooks', username: 'karibrooks' },
+            { platform: 'Twitter/X', url: 'https://x.com/karibrooks', username: '@karibrooks' },
+        ],
+        recentActivity: [
+            'Expanded Treehouse partner network',
+            'Launched new curriculum partnership program',
+        ],
+        createdAt: new Date(2026, 0, 10),
+        status: 'enriched',
+    },
 ];
 
 export default function CRMPage() {
