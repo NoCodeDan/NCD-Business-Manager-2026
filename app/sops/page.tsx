@@ -10,6 +10,7 @@ export default function SOPsPage() {
     const [editingSOP, setEditingSOP] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCategory, setFilterCategory] = useState<string>('all');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
     // Form state
     const [title, setTitle] = useState('');
@@ -99,29 +100,59 @@ export default function SOPsPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex gap-4 mb-6">
-                <input
-                    type="text"
-                    className="form-input"
-                    placeholder="Search SOPs..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ maxWidth: '300px' }}
-                />
-                <select
-                    className="form-select"
-                    value={filterCategory}
-                    onChange={(e) => setFilterCategory(e.target.value)}
-                    style={{ maxWidth: '200px' }}
-                >
-                    <option value="all">All Categories</option>
-                    {SOP_CATEGORIES.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                </select>
+            <div className="flex gap-4 mb-6 items-center justify-between flex-wrap">
+                <div className="flex gap-4">
+                    <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Search SOPs..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{ maxWidth: '300px' }}
+                    />
+                    <select
+                        className="form-select"
+                        value={filterCategory}
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                        style={{ maxWidth: '200px' }}
+                    >
+                        <option value="all">All Categories</option>
+                        {SOP_CATEGORIES.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        className={`btn-icon ${viewMode === 'list' ? 'active' : ''}`}
+                        onClick={() => setViewMode('list')}
+                        title="List view"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6" />
+                            <line x1="8" y1="12" x2="21" y2="12" />
+                            <line x1="8" y1="18" x2="21" y2="18" />
+                            <line x1="3" y1="6" x2="3.01" y2="6" />
+                            <line x1="3" y1="12" x2="3.01" y2="12" />
+                            <line x1="3" y1="18" x2="3.01" y2="18" />
+                        </svg>
+                    </button>
+                    <button
+                        className={`btn-icon ${viewMode === 'grid' ? 'active' : ''}`}
+                        onClick={() => setViewMode('grid')}
+                        title="Grid view"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            {/* SOPs Grid */}
+            {/* SOPs */}
             {filteredSOPs.length === 0 ? (
                 <div className="empty-state">
                     <svg className="empty-state-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -140,7 +171,47 @@ export default function SOPsPage() {
                         </button>
                     )}
                 </div>
+            ) : viewMode === 'list' ? (
+                /* List View */
+                <div className="card sop-library">
+                    {filteredSOPs.map((sop, index) => (
+                        <div
+                            key={sop.id}
+                            className="sop-library-item"
+                            onClick={() => window.location.href = `/sops/${sop.id}`}
+                            style={{ background: index % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent' }}
+                        >
+                            <div className="sop-library-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                                    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                                </svg>
+                            </div>
+                            <div className="sop-library-content">
+                                <h3 className="sop-library-title">{sop.title}</h3>
+                                <p className="sop-library-preview">{sop.content.substring(0, 100)}...</p>
+                            </div>
+                            <span className="badge badge-primary">{sop.category}</span>
+                            <span className="sop-library-date">{new Date(sop.updatedAt).toLocaleDateString()}</span>
+                            <div className="sop-library-actions" onClick={(e) => e.stopPropagation()}>
+                                <button className="btn-icon" onClick={() => openModal(sop.id)} title="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                    </svg>
+                                </button>
+                                <button className="btn-icon" onClick={() => handleDelete(sop.id)} title="Delete">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 6h18" />
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             ) : (
+                /* Grid View */
                 <div className="grid grid-2">
                     {filteredSOPs.map(sop => (
                         <div
