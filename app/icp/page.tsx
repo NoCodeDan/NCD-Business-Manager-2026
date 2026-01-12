@@ -238,7 +238,7 @@ export default function ICPPage() {
                                                 style={{
                                                     padding: "var(--space-3)",
                                                     background: "rgba(34, 197, 94, 0.05)",
-                                                    borderLeft: "3px solid var(--color-accent-success)",
+                                                    borderLeft: "4px solid var(--color-accent-success)",
                                                 }}
                                             >
                                                 <div className="flex items-center justify-between">

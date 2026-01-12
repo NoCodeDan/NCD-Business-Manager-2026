@@ -201,8 +201,8 @@ export default function QuartersPage() {
                                                 padding: "var(--space-3)",
                                                 cursor: "pointer",
                                                 borderLeft: action.completed
-                                                    ? "3px solid var(--color-accent-success)"
-                                                    : "3px solid var(--color-border)",
+                                                    ? "4px solid var(--color-accent-success)"
+                                                    : "4px solid var(--color-border)",
                                             }}
                                             onClick={() => handleToggleAction(quarter._id, action.id)}
                                         >
