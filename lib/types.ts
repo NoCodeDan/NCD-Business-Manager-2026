@@ -379,6 +379,9 @@ export const CONTENT_COLORS = [
   '#3b82f6', // Blue
 ];
 
+// ICP Business Areas (subset of BusinessArea - no personal-brand)
+export type ICPBusinessArea = 'tangible-ideas' | 'no-code-effect' | 'adalo';
+
 // Operating Rules
 export type RuleType =
   | 'weekly-execution'
@@ -424,7 +427,7 @@ export interface ICPMessaging {
 
 export interface TargetICP {
   id: string;
-  business: BusinessArea;
+  business: ICPBusinessArea;
   name: string;
   description: string;
   characteristics: string[];

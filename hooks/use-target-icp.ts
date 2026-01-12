@@ -1,7 +1,10 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import type { TargetICP, BusinessArea } from "@/lib/types";
+import type { TargetICP, ICPBusinessArea } from "@/lib/types";
+
+// ICP-specific business area type (excludes 'personal-brand' which is not in the Convex schema)
+type ICPBusinessArea = Exclude<BusinessArea, "personal-brand">;
 
 // ==========================================
 // QUERY HOOKS
@@ -24,7 +27,7 @@ export function useTargetICP(id: Id<"targetICP"> | undefined) {
 /**
  * Get ICPs by business area
  */
-export function useTargetICPsByBusiness(business: BusinessArea | undefined) {
+export function useTargetICPsByBusiness(business: ICPBusinessArea | undefined) {
     return useQuery(api.targetICP.getByBusiness, business ? { business } : "skip");
 }
 
@@ -38,7 +41,7 @@ export function useActiveTargetICPs() {
 /**
  * Get active ICPs by business
  */
-export function useActiveTargetICPsByBusiness(business: BusinessArea | undefined) {
+export function useActiveTargetICPsByBusiness(business: ICPBusinessArea | undefined) {
     return useQuery(
         api.targetICP.getActiveByBusiness,
         business ? { business } : "skip"
@@ -50,7 +53,7 @@ export function useActiveTargetICPsByBusiness(business: BusinessArea | undefined
  */
 export function useSearchTargetICPs(params?: {
     query?: string;
-    business?: BusinessArea;
+    business?: ICPBusinessArea;
     isActive?: boolean;
 }) {
     return useQuery(api.targetICP.search, params || {});
@@ -215,7 +218,7 @@ export function useTargetICPWithMutations(id: Id<"targetICP"> | undefined) {
 /**
  * Get ICPs by business with summary
  */
-export function useTargetICPsByBusinessWithSummary(business: BusinessArea) {
+export function useTargetICPsByBusinessWithSummary(business: ICPBusinessArea) {
     const icps = useTargetICPsByBusiness(business);
     const activeICPs = useActiveTargetICPsByBusiness(business);
     const summary = useICPSummary();
