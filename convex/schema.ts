@@ -464,4 +464,69 @@ export default defineSchema({
         updatedAt: v.string(),
     }).index("by_status", ["status"])
         .index("by_email", ["email"]),
+
+    // ==========================================
+    // PRODUCTIVITY TABLES
+    // ==========================================
+
+    // Todos - Task management
+    todos: defineTable({
+        title: v.string(),
+        completed: v.boolean(),
+        priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
+        dueDate: v.optional(v.string()),
+        parentId: v.optional(v.id("todos")), // For subtasks
+        position: v.number(),
+        createdAt: v.string(),
+        updatedAt: v.string(),
+    }).index("by_parent", ["parentId"])
+        .index("by_completed", ["completed"])
+        .index("by_due_date", ["dueDate"]),
+
+    // Calendar Events
+    calendarEvents: defineTable({
+        title: v.string(),
+        description: v.optional(v.string()),
+        startDate: v.string(),
+        endDate: v.optional(v.string()),
+        allDay: v.boolean(),
+        location: v.optional(v.string()),
+        color: v.optional(v.string()),
+        source: v.union(v.literal("manual"), v.literal("google"), v.literal("imported")),
+        externalId: v.optional(v.string()), // For synced events
+        createdAt: v.string(),
+        updatedAt: v.string(),
+    }).index("by_start_date", ["startDate"])
+        .index("by_source", ["source"]),
+
+    // Content Ideas
+    contentIdeas: defineTable({
+        title: v.string(),
+        description: v.optional(v.string()),
+        type: v.union(
+            v.literal("blog"),
+            v.literal("youtube"),
+            v.literal("short-form"),
+            v.literal("twitter"),
+            v.literal("linkedin"),
+            v.literal("newsletter"),
+            v.literal("other")
+        ),
+        status: v.union(
+            v.literal("brainstorm"),
+            v.literal("researching"),
+            v.literal("outlined"),
+            v.literal("drafted"),
+            v.literal("published"),
+            v.literal("archived")
+        ),
+        priority: v.optional(v.union(v.literal("low"), v.literal("medium"), v.literal("high"))),
+        tags: v.array(v.string()),
+        notes: v.optional(v.string()),
+        targetDate: v.optional(v.string()),
+        publishedUrl: v.optional(v.string()),
+        createdAt: v.string(),
+        updatedAt: v.string(),
+    }).index("by_status", ["status"])
+        .index("by_type", ["type"]),
 });

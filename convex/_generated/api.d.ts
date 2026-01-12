@@ -11,8 +11,10 @@
 import type * as agent from "../agent.js";
 import type * as agentLogs from "../agentLogs.js";
 import type * as brandPartners from "../brandPartners.js";
+import type * as calendarEvents from "../calendarEvents.js";
 import type * as clients from "../clients.js";
 import type * as contacts from "../contacts.js";
+import type * as contentIdeas from "../contentIdeas.js";
 import type * as contentPlans from "../contentPlans.js";
 import type * as context from "../context.js";
 import type * as conversations from "../conversations.js";
@@ -36,6 +38,7 @@ import type * as seedCRM from "../seedCRM.js";
 import type * as seedSOPs from "../seedSOPs.js";
 import type * as sops from "../sops.js";
 import type * as targetICP from "../targetICP.js";
+import type * as todos from "../todos.js";
 
 import type {
   ApiFromModules,
@@ -47,8 +50,10 @@ declare const fullApi: ApiFromModules<{
   agent: typeof agent;
   agentLogs: typeof agentLogs;
   brandPartners: typeof brandPartners;
+  calendarEvents: typeof calendarEvents;
   clients: typeof clients;
   contacts: typeof contacts;
+  contentIdeas: typeof contentIdeas;
   contentPlans: typeof contentPlans;
   context: typeof context;
   conversations: typeof conversations;
@@ -72,6 +77,7 @@ declare const fullApi: ApiFromModules<{
   seedSOPs: typeof seedSOPs;
   sops: typeof sops;
   targetICP: typeof targetICP;
+  todos: typeof todos;
 }>;
 
 /**
