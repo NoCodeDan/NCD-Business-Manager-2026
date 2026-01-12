@@ -14,6 +14,7 @@ export default function TodosPage() {
         deleteTodo,
         clearCompleted,
         getSubtasks,
+        reorderTodos,
         completedCount,
         pendingCount,
     } = useTodos();
@@ -27,6 +28,39 @@ export default function TodosPage() {
     const [addingSubtaskTo, setAddingSubtaskTo] = useState<string | null>(null);
     const [subtaskTitle, setSubtaskTitle] = useState('');
     const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
+    const [draggedId, setDraggedId] = useState<string | null>(null);
+    const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+    const handleDragStart = (e: React.DragEvent, id: string) => {
+        setDraggedId(id);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', id);
+    };
+
+    const handleDragOver = (e: React.DragEvent, id: string) => {
+        e.preventDefault();
+        if (draggedId && draggedId !== id) {
+            setDragOverId(id);
+        }
+    };
+
+    const handleDragLeave = () => {
+        setDragOverId(null);
+    };
+
+    const handleDrop = (e: React.DragEvent, dropId: string) => {
+        e.preventDefault();
+        if (draggedId && draggedId !== dropId) {
+            reorderTodos(draggedId, dropId);
+        }
+        setDraggedId(null);
+        setDragOverId(null);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedId(null);
+        setDragOverId(null);
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -86,21 +120,11 @@ export default function TodosPage() {
         }
     };
 
-    // Filter top-level todos
+    // Filter top-level todos (already sorted by position in hook)
     const filteredTopLevel = topLevelTodos.filter(todo => {
         if (filter === 'pending') return !todo.completed;
         if (filter === 'completed') return todo.completed;
         return true;
-    });
-
-    // Sort: pending first, then by priority, then by date
-    const sortedTodos = [...filteredTopLevel].sort((a, b) => {
-        if (a.completed !== b.completed) return a.completed ? 1 : -1;
-        const priorityOrder = { high: 0, medium: 1, low: 2 };
-        if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-            return priorityOrder[a.priority] - priorityOrder[b.priority];
-        }
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
     // Render a todo item (used for both parent and subtasks)
@@ -109,13 +133,22 @@ export default function TodosPage() {
         const hasSubtasks = subtasks.length > 0;
         const isExpanded = expandedTasks.has(todo.id);
         const completedSubtasks = subtasks.filter(s => s.completed).length;
+        const isDragging = draggedId === todo.id;
+        const isDragOver = dragOverId === todo.id;
 
         return (
             <div key={todo.id}>
                 <div
-                    className={`todo-item ${todo.completed ? 'completed' : ''} ${isSubtask ? 'subtask' : ''} ${!isSubtask && hasSubtasks && isExpanded ? 'has-subtasks' : ''}`}
+                    className={`todo-item ${todo.completed ? 'completed' : ''} ${isSubtask ? 'subtask' : ''} ${!isSubtask && hasSubtasks && isExpanded ? 'has-subtasks' : ''} ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}`}
+                    draggable={!isSubtask}
+                    onDragStart={(e) => !isSubtask && handleDragStart(e, todo.id)}
+                    onDragOver={(e) => !isSubtask && handleDragOver(e, todo.id)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => !isSubtask && handleDrop(e, todo.id)}
+                    onDragEnd={handleDragEnd}
                     style={{
                         background: !isSubtask && index % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent',
+                        cursor: !isSubtask ? 'grab' : 'default',
                     }}
                 >
                     {/* Expand/Collapse for parent tasks */}
@@ -375,7 +408,7 @@ export default function TodosPage() {
             </div>
 
             {/* Todo List */}
-            {sortedTodos.length === 0 ? (
+            {filteredTopLevel.length === 0 ? (
                 <div className="empty-state">
                     <svg className="empty-state-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -390,7 +423,7 @@ export default function TodosPage() {
                 </div>
             ) : (
                 <div className="card todo-list">
-                    {sortedTodos.map((todo, index) => renderTodoItem(todo, false, index))}
+                    {filteredTopLevel.map((todo, index) => renderTodoItem(todo, false, index))}
                 </div>
             )}
         </div>

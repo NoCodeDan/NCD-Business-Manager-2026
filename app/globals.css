@@ -4552,6 +4552,25 @@ table tbody tr:nth-child(even) {
   color: var(--color-text-muted);
 }
 
+/* Drag and drop states */
+.todo-item.dragging {
+  opacity: 0.5;
+  background: var(--color-bg-tertiary);
+}
+
+.todo-item.drag-over {
+  background: rgba(99, 102, 241, 0.1);
+  border-top: 2px solid var(--color-accent-primary);
+}
+
+.todo-item[draggable="true"] {
+  cursor: grab;
+}
+
+.todo-item[draggable="true"]:active {
+  cursor: grabbing;
+}
+
 .todo-checkbox {
   width: 22px;
   height: 22px;
