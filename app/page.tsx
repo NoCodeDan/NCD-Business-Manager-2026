@@ -122,11 +122,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-4 mb-6">
-        <div className="stat-card">
-          <p className="stat-label">Total SOPs</p>
-          <p className="stat-value">{sops.length}</p>
-        </div>
+      <div className="grid grid-3 mb-6">
         <div className="stat-card">
           <p className="stat-label">Active Projects</p>
           <p className="stat-value">{activeProjects.length}</p>
