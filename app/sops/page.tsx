@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useSOPs } from '@/hooks/use-sops';
 import { SOP_CATEGORIES, SOPCategory } from '@/lib/types';
 
@@ -175,10 +176,10 @@ export default function SOPsPage() {
                 /* List View */
                 <div className="card sop-library">
                     {filteredSOPs.map((sop, index) => (
-                        <div
+                        <Link
                             key={sop.id}
+                            href={`/sops/${sop.id}`}
                             className="sop-library-item"
-                            onClick={() => window.location.href = `/sops/${sop.id}`}
                             style={{ background: index % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent' }}
                         >
                             <div className="sop-library-icon">
@@ -207,17 +208,17 @@ export default function SOPsPage() {
                                     </svg>
                                 </button>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             ) : (
                 /* Grid View */
                 <div className="grid grid-2">
                     {filteredSOPs.map(sop => (
-                        <div
+                        <Link
                             key={sop.id}
+                            href={`/sops/${sop.id}`}
                             className="card sop-card"
-                            onClick={() => window.location.href = `/sops/${sop.id}`}
                             style={{ cursor: 'pointer' }}
                         >
                             <div className="card-header">
@@ -266,7 +267,7 @@ export default function SOPsPage() {
                             <p className="text-muted text-sm mt-4">
                                 Updated {new Date(sop.updatedAt).toLocaleDateString()}
                             </p>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             )}
