@@ -3,9 +3,6 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { TargetICP, ICPBusinessArea } from "@/lib/types";
 
-// ICP-specific business area type (excludes 'personal-brand' which is not in the Convex schema)
-type ICPBusinessArea = Exclude<BusinessArea, "personal-brand">;
-
 // ==========================================
 // QUERY HOOKS
 // ==========================================
