@@ -6,6 +6,7 @@ import { useSOPs } from '@/hooks/use-sops';
 import { useProjects } from '@/hooks/use-projects';
 import { useExpenses } from '@/hooks/use-expenses';
 import { useInitiatives } from '@/hooks/use-initiatives';
+import { UpcomingAgenda } from '@/components/dashboard/UpcomingAgenda';
 
 // Colors for the donut chart categories
 const CATEGORY_COLORS: Record<string, string> = {
@@ -138,6 +139,11 @@ export default function Dashboard() {
           <p className="stat-label">Initiatives</p>
           <p className="stat-value">{initiatives.length}</p>
         </div>
+      </div>
+
+      {/* Upcoming Agenda - Full Width */}
+      <div className="mb-6">
+        <UpcomingAgenda projects={projects} upcomingRenewals={upcomingRenewals} />
       </div>
 
       <div className="grid grid-2">
@@ -380,9 +386,9 @@ export default function Dashboard() {
                       <span style={{ color: 'var(--color-text-primary)' }}>{initiative.name}</span>
                     </div>
                     <span className={`badge ${initiative.status === 'on-track' ? 'badge-success' :
-                        initiative.status === 'at-risk' ? 'badge-warning' :
-                          initiative.status === 'behind' ? 'badge-danger' :
-                            'badge-primary'
+                      initiative.status === 'at-risk' ? 'badge-warning' :
+                        initiative.status === 'behind' ? 'badge-danger' :
+                          'badge-primary'
                       }`}>
                       {initiative.status.replace('-', ' ')}
                     </span>
