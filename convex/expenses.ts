@@ -62,3 +62,47 @@ export const remove = mutation({
         await ctx.db.delete(args.id);
     },
 });
+
+// Search expenses by name, category, or billing cycle
+export const search = query({
+    args: {
+        query: v.optional(v.string()),
+        category: v.optional(v.string()),
+        billingCycle: v.optional(v.union(v.literal("monthly"), v.literal("annual"))),
+        minAmount: v.optional(v.number()),
+        maxAmount: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+        let expenses = await ctx.db.query("expenses").collect();
+
+        // Filter by category
+        if (args.category) {
+            expenses = expenses.filter(e => e.category === args.category);
+        }
+
+        // Filter by billing cycle
+        if (args.billingCycle) {
+            expenses = expenses.filter(e => e.billingCycle === args.billingCycle);
+        }
+
+        // Filter by amount range
+        if (args.minAmount !== undefined) {
+            expenses = expenses.filter(e => e.amount >= args.minAmount!);
+        }
+        if (args.maxAmount !== undefined) {
+            expenses = expenses.filter(e => e.amount <= args.maxAmount!);
+        }
+
+        // Filter by search query
+        if (args.query) {
+            const searchLower = args.query.toLowerCase();
+            expenses = expenses.filter(expense =>
+                expense.name.toLowerCase().includes(searchLower) ||
+                expense.category.toLowerCase().includes(searchLower) ||
+                (expense.notes && expense.notes.toLowerCase().includes(searchLower))
+            );
+        }
+
+        return expenses;
+    },
+});

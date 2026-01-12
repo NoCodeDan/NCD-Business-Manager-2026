@@ -58,3 +58,19 @@ export const remove = mutation({
         await ctx.db.delete(args.id);
     },
 });
+
+// Search SOPs by title, content, category, or tags
+export const search = query({
+    args: { query: v.string() },
+    handler: async (ctx, args) => {
+        const allSOPs = await ctx.db.query("sops").collect();
+        const searchLower = args.query.toLowerCase();
+
+        return allSOPs.filter(sop =>
+            sop.title.toLowerCase().includes(searchLower) ||
+            sop.content.toLowerCase().includes(searchLower) ||
+            sop.category.toLowerCase().includes(searchLower) ||
+            sop.tags.some(tag => tag.toLowerCase().includes(searchLower))
+        );
+    },
+});

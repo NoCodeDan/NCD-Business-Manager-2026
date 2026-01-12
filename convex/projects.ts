@@ -138,3 +138,36 @@ export const deleteTask = mutation({
         });
     },
 });
+
+// Search projects by name, description, or status
+export const search = query({
+    args: {
+        query: v.optional(v.string()),
+        status: v.optional(v.union(
+            v.literal("active"),
+            v.literal("paused"),
+            v.literal("completed"),
+            v.literal("archived")
+        )),
+    },
+    handler: async (ctx, args) => {
+        let projects = await ctx.db.query("projects").collect();
+
+        // Filter by status if provided
+        if (args.status) {
+            projects = projects.filter(p => p.status === args.status);
+        }
+
+        // Filter by search query if provided
+        if (args.query) {
+            const searchLower = args.query.toLowerCase();
+            projects = projects.filter(project =>
+                project.name.toLowerCase().includes(searchLower) ||
+                project.description.toLowerCase().includes(searchLower) ||
+                project.tasks.some(task => task.title.toLowerCase().includes(searchLower))
+            );
+        }
+
+        return projects;
+    },
+});

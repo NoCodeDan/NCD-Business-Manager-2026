@@ -126,3 +126,43 @@ export const updateKPI = mutation({
         });
     },
 });
+
+// Search initiatives by name, description, category, or status
+export const search = query({
+    args: {
+        query: v.optional(v.string()),
+        category: v.optional(v.string()),
+        status: v.optional(v.union(
+            v.literal("on-track"),
+            v.literal("at-risk"),
+            v.literal("behind"),
+            v.literal("completed")
+        )),
+    },
+    handler: async (ctx, args) => {
+        let initiatives = await ctx.db.query("initiatives").collect();
+
+        // Filter by category
+        if (args.category) {
+            initiatives = initiatives.filter(i => i.category === args.category);
+        }
+
+        // Filter by status
+        if (args.status) {
+            initiatives = initiatives.filter(i => i.status === args.status);
+        }
+
+        // Filter by search query
+        if (args.query) {
+            const searchLower = args.query.toLowerCase();
+            initiatives = initiatives.filter(initiative =>
+                initiative.name.toLowerCase().includes(searchLower) ||
+                initiative.description.toLowerCase().includes(searchLower) ||
+                initiative.category.toLowerCase().includes(searchLower) ||
+                initiative.kpis.some(kpi => kpi.name.toLowerCase().includes(searchLower))
+            );
+        }
+
+        return initiatives;
+    },
+});

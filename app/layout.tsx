@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ConvexClientProvider } from "./ConvexClientProvider";
+import { AgentChat } from "@/components/agent/AgentChat";
 
 export const metadata: Metadata = {
   title: "NCD Business Manager",
@@ -23,9 +24,9 @@ export default function RootLayout({
               {children}
             </main>
           </div>
+          <AgentChat />
         </ConvexClientProvider>
       </body>
     </html>
   );
 }
-

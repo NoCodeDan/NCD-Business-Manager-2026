@@ -83,4 +83,37 @@ export default defineSchema({
         createdAt: v.string(),
         updatedAt: v.string(),
     }),
+
+    // Agent action logs for transparency
+    agent_logs: defineTable({
+        action: v.string(),           // e.g., "create", "update", "delete", "search"
+        entityType: v.string(),       // e.g., "sop", "project", "expense", "initiative"
+        entityId: v.optional(v.string()),
+        summary: v.string(),          // Human-readable description of the action
+        agentId: v.optional(v.string()),  // Optional identifier for the agent
+        metadata: v.optional(v.any()), // Additional context
+        timestamp: v.string(),
+    }).index("by_timestamp", ["timestamp"])
+        .index("by_entity", ["entityType", "entityId"]),
+
+    // Agent conversations
+    conversations: defineTable({
+        title: v.optional(v.string()),
+        createdAt: v.string(),
+        updatedAt: v.string(),
+    }),
+
+    // Agent chat messages
+    messages: defineTable({
+        conversationId: v.id("conversations"),
+        role: v.union(v.literal("user"), v.literal("assistant"), v.literal("system")),
+        content: v.string(),
+        toolCalls: v.optional(v.array(v.object({
+            id: v.string(),
+            name: v.string(),
+            arguments: v.string(),
+            result: v.optional(v.string()),
+        }))),
+        createdAt: v.string(),
+    }).index("by_conversation", ["conversationId"]),
 });
