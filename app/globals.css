@@ -15,7 +15,9 @@
 }
 
 :root {
-  /* Colors - Dark Theme */
+  /* ========================================
+     Dark Theme (Default)
+     ======================================== */
   --color-bg-primary: #0a0a0f;
   --color-bg-secondary: #12121a;
   --color-bg-tertiary: #1a1a25;
@@ -111,6 +113,42 @@
   --header-height: 64px;
 }
 
+/* ==========================================
+   Light Theme - Professional & Clean
+   ========================================== */
+[data-theme="light"] {
+  /* Backgrounds - Off-white & Light Greys */
+  --color-bg-primary: #fafbfc;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f4f6f8;
+  --color-bg-elevated: #ffffff;
+  --color-bg-hover: #eef1f4;
+
+  /* Accent Colors - Slightly deeper for contrast */
+  --color-accent-primary: #5046e5;
+  --color-accent-primary-hover: #6366f1;
+  --color-accent-secondary: #7c3aed;
+  --color-accent-success: #059669;
+  --color-accent-warning: #d97706;
+  --color-accent-danger: #dc2626;
+
+  /* Text Colors - Professional dark greys */
+  --color-text-primary: #1a1d21;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
+  --color-text-inverse: #ffffff;
+
+  /* Border Colors - Subtle */
+  --color-border: #e5e7eb;
+  --color-border-hover: #d1d5db;
+
+  /* Shadows - Softer, more professional */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.06), 0 4px 10px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 20px rgba(80, 70, 229, 0.15);
+}
+
 html {
   font-size: 16px;
   scroll-behavior: smooth;
@@ -192,6 +230,62 @@ body {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
   color: var(--color-accent-primary);
   border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+[data-theme="light"] .nav-link.active {
+  background: linear-gradient(135deg, rgba(80, 70, 229, 0.08), rgba(124, 58, 237, 0.08));
+  border-color: rgba(80, 70, 229, 0.2);
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  margin-top: auto;
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-2) var(--space-3);
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  width: calc(100% - var(--space-6));
+}
+
+.theme-toggle:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-hover);
+}
+
+.theme-toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.theme-toggle-label {
+  flex: 1;
+  text-align: left;
+}
+
+.theme-icon-placeholder {
+  width: 18px;
+  height: 18px;
+  background: var(--color-bg-hover);
+  border-radius: 50%;
 }
 
 .nav-icon {
