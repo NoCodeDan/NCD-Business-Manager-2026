@@ -4474,3 +4474,49 @@ h6 {
   color: var(--color-text-secondary);
   flex-shrink: 0;
 }
+
+/* ==========================================
+   Zebra Striping for List Rows
+   ========================================== */
+
+/* CRM contact rows */
+.crm-list>.crm-contact-row:nth-child(even) {
+  background: var(--color-bg-tertiary);
+}
+
+/* Agenda items */
+.agenda-items>.agenda-item:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="light"] .agenda-items>.agenda-item:nth-child(even) {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+/* Expense list rows - if using card-based list items */
+.flex.flex-col.gap-4>div:nth-child(even),
+.flex.flex-col.gap-3>div:nth-child(even),
+.flex.flex-col.gap-2>div:nth-child(even) {
+  background: rgba(255, 255, 255, 0.015);
+  border-radius: var(--radius-md);
+}
+
+[data-theme="light"] .flex.flex-col.gap-4>div:nth-child(even),
+[data-theme="light"] .flex.flex-col.gap-3>div:nth-child(even),
+[data-theme="light"] .flex.flex-col.gap-2>div:nth-child(even) {
+  background: rgba(0, 0, 0, 0.012);
+}
+
+/* Preserve urgent styling over zebra */
+.agenda-item.urgent:nth-child(even) {
+  background: rgba(239, 68, 68, 0.05);
+}
+
+/* HTML Table rows */
+table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+[data-theme="light"] table tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.02);
+}
