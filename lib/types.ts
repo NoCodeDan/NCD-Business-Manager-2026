@@ -57,6 +57,15 @@ export type SOPCategory =
   | 'Finance'
   | 'Client Management'
   | 'Content'
+  | 'Leadership'
+  | 'Product Studio'
+  | 'Automation'
+  | 'Content Strategy'
+  | 'Education'
+  | 'Video Production'
+  | 'UX Design'
+  | 'Community'
+  | 'Client Success'
   | 'Other';
 
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
@@ -70,8 +79,17 @@ export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
 ];
 
 export const SOP_CATEGORIES: SOPCategory[] = [
-  'Operations',
+  'Leadership',
+  'Product Studio',
+  'Automation',
+  'Content Strategy',
+  'Education',
+  'Video Production',
+  'UX Design',
   'Marketing',
+  'Community',
+  'Client Success',
+  'Operations',
   'Finance',
   'Client Management',
   'Content',

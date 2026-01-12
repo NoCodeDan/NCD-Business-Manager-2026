@@ -18,6 +18,7 @@ import type * as http from "../http.js";
 import type * as initiatives from "../initiatives.js";
 import type * as projects from "../projects.js";
 import type * as seed from "../seed.js";
+import type * as seedSOPs from "../seedSOPs.js";
 import type * as sops from "../sops.js";
 
 import type {
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   initiatives: typeof initiatives;
   projects: typeof projects;
   seed: typeof seed;
+  seedSOPs: typeof seedSOPs;
   sops: typeof sops;
 }>;
 

@@ -5,6 +5,35 @@ import Link from 'next/link';
 import { useSOPs } from '@/hooks/use-sops';
 import { SOP_CATEGORIES, SOPCategory } from '@/lib/types';
 
+// Helper to strip markdown symbols for preview text
+const stripMarkdown = (text: string): string => {
+    // Split into lines and skip the first line if it's a heading (the title)
+    let lines = text.split('\n');
+
+    // Skip the first heading (h1) since it's the title displayed separately
+    if (lines.length > 0 && /^#\s+/.test(lines[0])) {
+        lines = lines.slice(1);
+    }
+
+    return lines.join('\n')
+        // Remove headings (# ## ### etc.)
+        .replace(/^#{1,6}\s+/gm, '')
+        // Remove bold/italic markers
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/\*([^*]+)\*/g, '$1')
+        .replace(/__([^_]+)__/g, '$1')
+        .replace(/_([^_]+)_/g, '$1')
+        // Remove bullet points and numbered lists
+        .replace(/^[\-\*•]\s+/gm, '')
+        .replace(/^\d+\.\s+/gm, '')
+        // Remove em-dashes and other special chars
+        .replace(/—/g, '-')
+        // Collapse multiple spaces/newlines
+        .replace(/\n+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
 export default function SOPsPage() {
     const { sops, isLoaded, addSOP, updateSOP, deleteSOP } = useSOPs();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -173,43 +202,69 @@ export default function SOPsPage() {
                     )}
                 </div>
             ) : viewMode === 'list' ? (
-                /* List View */
-                <div className="card sop-library">
-                    {filteredSOPs.map((sop, index) => (
-                        <Link
-                            key={sop.id}
-                            href={`/sops/${sop.id}`}
-                            className="sop-library-item"
-                            style={{ background: index % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent' }}
-                        >
-                            <div className="sop-library-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-                                    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-                                </svg>
+                /* List View - Grouped by Category */
+                <div className="sop-grouped-list">
+                    {(() => {
+                        // Group SOPs by category
+                        const grouped = filteredSOPs.reduce((acc, sop) => {
+                            const cat = sop.category;
+                            if (!acc[cat]) acc[cat] = [];
+                            acc[cat].push(sop);
+                            return acc;
+                        }, {} as Record<string, typeof filteredSOPs>);
+
+                        // Sort categories by the order defined in SOP_CATEGORIES
+                        const sortedCategories = Object.keys(grouped).sort((a, b) => {
+                            const aIndex = SOP_CATEGORIES.indexOf(a as any);
+                            const bIndex = SOP_CATEGORIES.indexOf(b as any);
+                            return aIndex - bIndex;
+                        });
+
+                        return sortedCategories.map(category => (
+                            <div key={category} className="sop-category-section">
+                                <div className="sop-category-header">
+                                    <h2 className="sop-category-title">{category}</h2>
+                                    <span className="sop-category-count">{grouped[category].length} SOPs</span>
+                                </div>
+                                <div className="card sop-library">
+                                    {grouped[category].map((sop, index) => (
+                                        <Link
+                                            key={sop.id}
+                                            href={`/sops/${sop.id}`}
+                                            className="sop-library-item"
+                                            style={{ background: index % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent' }}
+                                        >
+                                            <div className="sop-library-icon">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                                                    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                                                </svg>
+                                            </div>
+                                            <div className="sop-library-content">
+                                                <h3 className="sop-library-title">{sop.title}</h3>
+                                                <p className="sop-library-preview">{stripMarkdown(sop.content).substring(0, 100)}...</p>
+                                            </div>
+                                            <span className="sop-library-date">{new Date(sop.updatedAt).toLocaleDateString()}</span>
+                                            <div className="sop-library-actions" onClick={(e) => e.stopPropagation()}>
+                                                <button className="btn-icon" onClick={() => openModal(sop.id)} title="Edit">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                                    </svg>
+                                                </button>
+                                                <button className="btn-icon" onClick={() => handleDelete(sop.id)} title="Delete">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M3 6h18" />
+                                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="sop-library-content">
-                                <h3 className="sop-library-title">{sop.title}</h3>
-                                <p className="sop-library-preview">{sop.content.substring(0, 100)}...</p>
-                            </div>
-                            <span className="badge badge-primary">{sop.category}</span>
-                            <span className="sop-library-date">{new Date(sop.updatedAt).toLocaleDateString()}</span>
-                            <div className="sop-library-actions" onClick={(e) => e.stopPropagation()}>
-                                <button className="btn-icon" onClick={() => openModal(sop.id)} title="Edit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                                    </svg>
-                                </button>
-                                <button className="btn-icon" onClick={() => handleDelete(sop.id)} title="Delete">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M3 6h18" />
-                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </Link>
-                    ))}
+                        ));
+                    })()}
                 </div>
             ) : (
                 /* Grid View */
@@ -242,7 +297,7 @@ export default function SOPsPage() {
                                 </div>
                             </div>
                             <p className="sop-card-preview">
-                                {sop.content}
+                                {stripMarkdown(sop.content).substring(0, 150)}...
                             </p>
                             {sop.tags.length > 0 && (
                                 <div className="flex gap-2 mt-4" style={{ flexWrap: 'wrap' }}>

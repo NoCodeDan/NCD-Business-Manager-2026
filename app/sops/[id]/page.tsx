@@ -1,9 +1,11 @@
 'use client';
 
+import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSOPs } from '@/hooks/use-sops';
 import { useState } from 'react';
 import { SOP_CATEGORIES, SOPCategory } from '@/lib/types';
+import ReactMarkdown from 'react-markdown';
 
 export default function SOPDetailPage() {
     const params = useParams();
@@ -46,48 +48,6 @@ export default function SOPDetailPage() {
             deleteSOP(sopId);
             router.push('/sops');
         }
-    };
-
-    // Parse content into sections for better display
-    const renderContent = (text: string) => {
-        // Split by double newlines for paragraphs
-        const sections = text.split(/\n\n+/);
-
-        return sections.map((section, index) => {
-            const trimmed = section.trim();
-
-            // Check if it's a numbered list
-            if (/^\d+[\.\)]\s/.test(trimmed)) {
-                const items = trimmed.split(/\n/).filter(Boolean);
-                return (
-                    <ol key={index} className="sop-list sop-list-numbered">
-                        {items.map((item, i) => (
-                            <li key={i}>{item.replace(/^\d+[\.\)]\s*/, '')}</li>
-                        ))}
-                    </ol>
-                );
-            }
-
-            // Check if it's a bullet list
-            if (/^[\-\*•]\s/.test(trimmed)) {
-                const items = trimmed.split(/\n/).filter(Boolean);
-                return (
-                    <ul key={index} className="sop-list sop-list-bullet">
-                        {items.map((item, i) => (
-                            <li key={i}>{item.replace(/^[\-\*•]\s*/, '')}</li>
-                        ))}
-                    </ul>
-                );
-            }
-
-            // Check if it looks like a heading (short, possibly all caps or ends with colon)
-            if (trimmed.length < 80 && (trimmed.endsWith(':') || trimmed === trimmed.toUpperCase())) {
-                return <h3 key={index} className="sop-section-heading">{trimmed.replace(/:$/, '')}</h3>;
-            }
-
-            // Regular paragraph
-            return <p key={index} className="sop-paragraph">{trimmed}</p>;
-        });
     };
 
     if (!isLoaded) {
@@ -172,9 +132,9 @@ export default function SOPDetailPage() {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Content</label>
+                        <label className="form-label">Content (Markdown supported)</label>
                         <p className="text-muted text-sm mb-2">
-                            Tip: Use bullet points (- or *), numbered lists (1. 2. 3.), and separate sections with blank lines.
+                            Use # for headings, **bold**, *italic*, - or 1. for lists
                         </p>
                         <textarea
                             className="form-textarea sop-content-editor"
@@ -257,8 +217,8 @@ export default function SOPDetailPage() {
                 <hr className="sop-divider" />
 
                 {/* Content */}
-                <div className="sop-body">
-                    {renderContent(sop.content)}
+                <div className="sop-body sop-markdown">
+                    <ReactMarkdown>{sop.content}</ReactMarkdown>
                 </div>
             </article>
         </div>

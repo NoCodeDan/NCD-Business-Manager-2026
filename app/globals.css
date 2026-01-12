@@ -4245,6 +4245,155 @@ h6 {
   color: var(--color-text-primary);
 }
 
+/* Markdown Rendered Content Styles */
+.sop-markdown h1 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-top: var(--space-10);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--color-accent-primary);
+}
+
+.sop-markdown h2 {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-top: var(--space-10);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sop-markdown h3 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-4);
+}
+
+.sop-markdown h4 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-3);
+}
+
+.sop-markdown h5 {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sop-markdown h6 {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sop-markdown p {
+  margin-bottom: var(--space-6);
+  line-height: 1.9;
+}
+
+.sop-markdown strong {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.sop-markdown em {
+  font-style: italic;
+}
+
+.sop-markdown ul,
+.sop-markdown ol {
+  margin-bottom: var(--space-6);
+  padding-left: var(--space-8);
+}
+
+.sop-markdown ul {
+  list-style-type: disc;
+}
+
+.sop-markdown ol {
+  list-style-type: decimal;
+}
+
+.sop-markdown li {
+  margin-bottom: var(--space-3);
+  line-height: 1.8;
+  padding-left: var(--space-2);
+}
+
+.sop-markdown li::marker {
+  color: var(--color-accent-primary);
+  font-weight: 600;
+}
+
+.sop-markdown ul li::marker {
+  color: var(--color-accent-secondary);
+}
+
+.sop-markdown code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--color-bg-tertiary);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-sm);
+  color: var(--color-accent-primary);
+}
+
+.sop-markdown pre {
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  overflow-x: auto;
+  margin-bottom: var(--space-6);
+}
+
+.sop-markdown pre code {
+  background: none;
+  padding: 0;
+  color: var(--color-text-primary);
+}
+
+.sop-markdown blockquote {
+  border-left: 4px solid var(--color-accent-primary);
+  padding-left: var(--space-5);
+  margin: var(--space-6) 0;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.sop-markdown hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-8) 0;
+}
+
+.sop-markdown a {
+  color: var(--color-accent-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sop-markdown a:hover {
+  color: var(--color-accent-secondary);
+}
+
+/* Legacy classes for backward compatibility */
 .sop-paragraph {
   margin-bottom: var(--space-5);
 }
@@ -4257,6 +4406,14 @@ h6 {
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--color-border);
+}
+
+.sop-subsection-heading {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-3);
 }
 
 /* Lists */
@@ -4722,6 +4879,44 @@ table tbody tr:nth-child(even) {
 /* ==========================================
    SOP Library List View
    ========================================== */
+
+/* Grouped list container */
+.sop-grouped-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+/* Category section */
+.sop-category-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Category header */
+.sop-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+  border-bottom: 2px solid var(--color-accent-primary);
+}
+
+.sop-category-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.sop-category-count {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  background: var(--color-bg-tertiary);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+}
 
 .sop-library {
   padding: 0;
