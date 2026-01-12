@@ -391,4 +391,77 @@ export default defineSchema({
         updatedAt: v.string(),
     }).index("by_business", ["business"])
         .index("by_active", ["isActive"]),
+
+    // CRM Tables
+    contacts: defineTable({
+        name: v.string(),
+        email: v.string(),
+        bio: v.optional(v.string()),
+        location: v.optional(v.string()),
+        avatar: v.optional(v.string()),
+        company: v.object({
+            name: v.string(),
+            role: v.string(),
+            website: v.optional(v.string()),
+            industry: v.optional(v.string()),
+        }),
+        socialProfiles: v.array(v.object({
+            platform: v.string(),
+            url: v.string(),
+            username: v.string(),
+        })),
+        recentActivity: v.array(v.string()),
+        status: v.union(
+            v.literal("pending"),
+            v.literal("enriched"),
+            v.literal("failed")
+        ),
+        followUpDate: v.optional(v.string()),
+        followUpNote: v.optional(v.string()),
+        // Link to brand partner if this contact is from a partnership
+        brandPartnerId: v.optional(v.id("brandPartners")),
+        createdAt: v.string(),
+        updatedAt: v.string(),
+    }).index("by_email", ["email"])
+        .index("by_status", ["status"])
+        .index("by_brand_partner", ["brandPartnerId"]),
+
+    brandPartners: defineTable({
+        name: v.string(),
+        website: v.string(),
+        logo: v.optional(v.string()),
+        partnerType: v.union(
+            v.literal("strategic"),
+            v.literal("affiliate"),
+            v.literal("referral"),
+            v.literal("integration")
+        ),
+        status: v.union(
+            v.literal("active"),
+            v.literal("inactive"),
+            v.literal("pending")
+        ),
+        notes: v.optional(v.string()),
+        createdAt: v.string(),
+        updatedAt: v.string(),
+    }).index("by_status", ["status"])
+        .index("by_partner_type", ["partnerType"]),
+
+    clients: defineTable({
+        name: v.string(),
+        company: v.string(),
+        email: v.string(),
+        projectType: v.string(),
+        status: v.union(
+            v.literal("active"),
+            v.literal("completed"),
+            v.literal("prospect"),
+            v.literal("churned")
+        ),
+        value: v.optional(v.number()),
+        notes: v.optional(v.string()),
+        createdAt: v.string(),
+        updatedAt: v.string(),
+    }).index("by_status", ["status"])
+        .index("by_email", ["email"]),
 });
