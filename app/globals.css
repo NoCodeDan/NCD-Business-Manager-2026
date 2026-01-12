@@ -4608,3 +4608,46 @@ table tbody tr:nth-child(even) {
 .todo-item:hover .todo-actions {
   opacity: 1;
 }
+
+/* Subtask styles */
+.todo-item.subtask {
+  background: var(--color-bg-tertiary);
+  border-left: 2px solid var(--color-border);
+  margin-left: var(--space-3);
+}
+
+.todo-item.subtask .todo-title {
+  font-size: var(--text-sm);
+}
+
+.todo-expand {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.todo-expand:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.todo-subtask-count {
+  font-size: var(--text-xs);
+  color: var(--color-accent-primary);
+  background: rgba(99, 102, 241, 0.1);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.btn-sm {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+}

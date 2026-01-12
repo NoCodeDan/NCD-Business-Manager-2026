@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 export interface Todo {
     id: string;
@@ -9,6 +9,7 @@ export interface Todo {
     priority: 'low' | 'medium' | 'high';
     dueDate?: string;
     createdAt: string;
+    parentId?: string; // For subtasks
 }
 
 const STORAGE_KEY = 'ncd-todos';
@@ -37,7 +38,7 @@ export function useTodos() {
         }
     }, [todos, isLoaded]);
 
-    const addTodo = useCallback((title: string, priority: Todo['priority'] = 'medium', dueDate?: string) => {
+    const addTodo = useCallback((title: string, priority: Todo['priority'] = 'medium', dueDate?: string, parentId?: string) => {
         const newTodo: Todo = {
             id: Date.now().toString(),
             title,
@@ -45,14 +46,33 @@ export function useTodos() {
             priority,
             dueDate,
             createdAt: new Date().toISOString(),
+            parentId,
         };
         setTodos(prev => [newTodo, ...prev]);
+        return newTodo.id;
     }, []);
 
     const toggleTodo = useCallback((id: string) => {
-        setTodos(prev => prev.map(todo =>
-            todo.id === id ? { ...todo, completed: !todo.completed } : todo
-        ));
+        setTodos(prev => {
+            const todo = prev.find(t => t.id === id);
+            if (!todo) return prev;
+
+            const newCompleted = !todo.completed;
+
+            // If completing a parent, also complete all subtasks
+            // If uncompleting a parent, also uncomplete all subtasks
+            const subtaskIds = prev.filter(t => t.parentId === id).map(t => t.id);
+
+            return prev.map(t => {
+                if (t.id === id) {
+                    return { ...t, completed: newCompleted };
+                }
+                if (subtaskIds.includes(t.id)) {
+                    return { ...t, completed: newCompleted };
+                }
+                return t;
+            });
+        });
     }, []);
 
     const updateTodo = useCallback((id: string, updates: Partial<Omit<Todo, 'id' | 'createdAt'>>) => {
@@ -62,12 +82,26 @@ export function useTodos() {
     }, []);
 
     const deleteTodo = useCallback((id: string) => {
-        setTodos(prev => prev.filter(todo => todo.id !== id));
+        setTodos(prev => {
+            // Also delete all subtasks when deleting a parent
+            const subtaskIds = prev.filter(t => t.parentId === id).map(t => t.id);
+            return prev.filter(todo => todo.id !== id && !subtaskIds.includes(todo.id));
+        });
     }, []);
 
     const clearCompleted = useCallback(() => {
         setTodos(prev => prev.filter(todo => !todo.completed));
     }, []);
+
+    // Get subtasks for a parent
+    const getSubtasks = useCallback((parentId: string) => {
+        return todos.filter(t => t.parentId === parentId);
+    }, [todos]);
+
+    // Get top-level todos (no parent)
+    const topLevelTodos = useMemo(() => {
+        return todos.filter(t => !t.parentId);
+    }, [todos]);
 
     // Computed values
     const completedCount = todos.filter(t => t.completed).length;
@@ -77,12 +111,14 @@ export function useTodos() {
 
     return {
         todos,
+        topLevelTodos,
         isLoaded,
         addTodo,
         toggleTodo,
         updateTodo,
         deleteTodo,
         clearCompleted,
+        getSubtasks,
         completedCount,
         pendingCount,
         pendingTodos,

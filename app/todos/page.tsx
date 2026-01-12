@@ -6,12 +6,14 @@ import { useTodos, Todo } from '@/hooks/use-todos';
 export default function TodosPage() {
     const {
         todos,
+        topLevelTodos,
         isLoaded,
         addTodo,
         toggleTodo,
         updateTodo,
         deleteTodo,
         clearCompleted,
+        getSubtasks,
         completedCount,
         pendingCount,
     } = useTodos();
@@ -22,14 +24,40 @@ export default function TodosPage() {
     const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editTitle, setEditTitle] = useState('');
+    const [addingSubtaskTo, setAddingSubtaskTo] = useState<string | null>(null);
+    const [subtaskTitle, setSubtaskTitle] = useState('');
+    const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!newTodo.trim()) return;
-        addTodo(newTodo.trim(), newPriority, newDueDate || undefined);
+        const newId = addTodo(newTodo.trim(), newPriority, newDueDate || undefined);
+        // Auto-expand new tasks
+        setExpandedTasks(prev => new Set([...prev, newId]));
         setNewTodo('');
         setNewDueDate('');
         setNewPriority('medium');
+    };
+
+    const handleAddSubtask = (parentId: string) => {
+        if (!subtaskTitle.trim()) return;
+        addTodo(subtaskTitle.trim(), 'medium', undefined, parentId);
+        setSubtaskTitle('');
+        setAddingSubtaskTo(null);
+        // Ensure parent is expanded
+        setExpandedTasks(prev => new Set([...prev, parentId]));
+    };
+
+    const toggleExpanded = (id: string) => {
+        setExpandedTasks(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
     };
 
     const startEdit = (todo: Todo) => {
@@ -58,14 +86,15 @@ export default function TodosPage() {
         }
     };
 
-    const filteredTodos = todos.filter(todo => {
+    // Filter top-level todos
+    const filteredTopLevel = topLevelTodos.filter(todo => {
         if (filter === 'pending') return !todo.completed;
         if (filter === 'completed') return todo.completed;
         return true;
     });
 
     // Sort: pending first, then by priority, then by date
-    const sortedTodos = [...filteredTodos].sort((a, b) => {
+    const sortedTodos = [...filteredTopLevel].sort((a, b) => {
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
         const priorityOrder = { high: 0, medium: 1, low: 2 };
         if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
@@ -73,6 +102,186 @@ export default function TodosPage() {
         }
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
+
+    // Render a todo item (used for both parent and subtasks)
+    const renderTodoItem = (todo: Todo, isSubtask: boolean = false, index: number = 0) => {
+        const subtasks = getSubtasks(todo.id);
+        const hasSubtasks = subtasks.length > 0;
+        const isExpanded = expandedTasks.has(todo.id);
+        const completedSubtasks = subtasks.filter(s => s.completed).length;
+
+        return (
+            <div key={todo.id}>
+                <div
+                    className={`todo-item ${todo.completed ? 'completed' : ''} ${isSubtask ? 'subtask' : ''}`}
+                    style={{
+                        background: !isSubtask && index % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent',
+                        paddingLeft: isSubtask ? 'calc(var(--space-5) + 28px)' : 'var(--space-5)',
+                    }}
+                >
+                    {/* Expand/Collapse for parent tasks */}
+                    {!isSubtask && hasSubtasks && (
+                        <button
+                            className="todo-expand"
+                            onClick={() => toggleExpanded(todo.id)}
+                            title={isExpanded ? 'Collapse' : 'Expand'}
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+                            >
+                                <path d="m9 18 6-6-6-6" />
+                            </svg>
+                        </button>
+                    )}
+                    {!isSubtask && !hasSubtasks && <div style={{ width: '14px' }} />}
+
+                    <button
+                        className="todo-checkbox"
+                        onClick={() => toggleTodo(todo.id)}
+                        style={{
+                            borderColor: todo.completed ? 'var(--color-accent-success)' : getPriorityColor(todo.priority),
+                            background: todo.completed ? 'var(--color-accent-success)' : 'transparent',
+                            width: isSubtask ? '18px' : '22px',
+                            height: isSubtask ? '18px' : '22px',
+                        }}
+                    >
+                        {todo.completed && (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                        )}
+                    </button>
+
+                    <div className="todo-content">
+                        {editingId === todo.id ? (
+                            <input
+                                type="text"
+                                className="form-input"
+                                value={editTitle}
+                                onChange={(e) => setEditTitle(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') saveEdit(todo.id);
+                                    if (e.key === 'Escape') cancelEdit();
+                                }}
+                                autoFocus
+                            />
+                        ) : (
+                            <span className="todo-title" style={{ fontSize: isSubtask ? 'var(--text-sm)' : 'var(--text-base)' }}>
+                                {todo.title}
+                            </span>
+                        )}
+                        <div className="todo-meta">
+                            <span className="todo-priority" style={{ color: getPriorityColor(todo.priority) }}>
+                                {todo.priority}
+                            </span>
+                            {todo.dueDate && (
+                                <span className="todo-due">
+                                    Due: {new Date(todo.dueDate).toLocaleDateString()}
+                                </span>
+                            )}
+                            {!isSubtask && hasSubtasks && (
+                                <span className="todo-subtask-count">
+                                    {completedSubtasks}/{subtasks.length} subtasks
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="todo-actions">
+                        {editingId === todo.id ? (
+                            <>
+                                <button className="btn-icon" onClick={() => saveEdit(todo.id)} title="Save">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                </button>
+                                <button className="btn-icon" onClick={cancelEdit} title="Cancel">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M18 6 6 18M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                {!isSubtask && (
+                                    <button
+                                        className="btn-icon"
+                                        onClick={() => {
+                                            setAddingSubtaskTo(todo.id);
+                                            setExpandedTasks(prev => new Set([...prev, todo.id]));
+                                        }}
+                                        title="Add Subtask"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M12 5v14M5 12h14" />
+                                        </svg>
+                                    </button>
+                                )}
+                                <button className="btn-icon" onClick={() => startEdit(todo)} title="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                    </svg>
+                                </button>
+                                <button className="btn-icon" onClick={() => deleteTodo(todo.id)} title="Delete">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                    </svg>
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Subtasks */}
+                {!isSubtask && isExpanded && (
+                    <>
+                        {subtasks.map(subtask => renderTodoItem(subtask, true))}
+
+                        {/* Add subtask input */}
+                        {addingSubtaskTo === todo.id && (
+                            <div className="todo-item subtask" style={{ paddingLeft: 'calc(var(--space-5) + 28px)' }}>
+                                <div style={{ width: '18px' }} />
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    placeholder="Add subtask..."
+                                    value={subtaskTitle}
+                                    onChange={(e) => setSubtaskTitle(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleAddSubtask(todo.id);
+                                        if (e.key === 'Escape') {
+                                            setAddingSubtaskTo(null);
+                                            setSubtaskTitle('');
+                                        }
+                                    }}
+                                    autoFocus
+                                    style={{ flex: 1 }}
+                                />
+                                <button className="btn btn-primary btn-sm" onClick={() => handleAddSubtask(todo.id)}>
+                                    Add
+                                </button>
+                                <button className="btn btn-secondary btn-sm" onClick={() => {
+                                    setAddingSubtaskTo(null);
+                                    setSubtaskTitle('');
+                                }}>
+                                    Cancel
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        );
+    };
 
     if (!isLoaded) {
         return (
@@ -183,88 +392,7 @@ export default function TodosPage() {
                 </div>
             ) : (
                 <div className="card todo-list">
-                    {sortedTodos.map((todo, index) => (
-                        <div
-                            key={todo.id}
-                            className={`todo-item ${todo.completed ? 'completed' : ''}`}
-                            style={{
-                                background: index % 2 === 1 ? 'rgba(255,255,255,0.02)' : 'transparent',
-                            }}
-                        >
-                            <button
-                                className="todo-checkbox"
-                                onClick={() => toggleTodo(todo.id)}
-                                style={{
-                                    borderColor: todo.completed ? 'var(--color-accent-success)' : getPriorityColor(todo.priority),
-                                    background: todo.completed ? 'var(--color-accent-success)' : 'transparent',
-                                }}
-                            >
-                                {todo.completed && (
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                )}
-                            </button>
-
-                            <div className="todo-content">
-                                {editingId === todo.id ? (
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={editTitle}
-                                        onChange={(e) => setEditTitle(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') saveEdit(todo.id);
-                                            if (e.key === 'Escape') cancelEdit();
-                                        }}
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <span className="todo-title">{todo.title}</span>
-                                )}
-                                <div className="todo-meta">
-                                    <span className="todo-priority" style={{ color: getPriorityColor(todo.priority) }}>
-                                        {todo.priority}
-                                    </span>
-                                    {todo.dueDate && (
-                                        <span className="todo-due">
-                                            Due: {new Date(todo.dueDate).toLocaleDateString()}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="todo-actions">
-                                {editingId === todo.id ? (
-                                    <>
-                                        <button className="btn-icon" onClick={() => saveEdit(todo.id)} title="Save">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <polyline points="20 6 9 17 4 12" />
-                                            </svg>
-                                        </button>
-                                        <button className="btn-icon" onClick={cancelEdit} title="Cancel">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M18 6 6 18M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button className="btn-icon" onClick={() => startEdit(todo)} title="Edit">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                                            </svg>
-                                        </button>
-                                        <button className="btn-icon" onClick={() => deleteTodo(todo.id)} title="Delete">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                            </svg>
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    ))}
+                    {sortedTodos.map((todo, index) => renderTodoItem(todo, false, index))}
                 </div>
             )}
         </div>
