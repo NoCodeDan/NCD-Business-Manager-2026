@@ -4618,18 +4618,10 @@ table tbody tr:nth-child(even) {
 .todo-subtasks {
   background: var(--color-bg-tertiary);
   border-bottom: 1px solid var(--color-border);
-  padding-left: var(--space-6);
-  position: relative;
-}
-
-.todo-subtasks::before {
-  content: '';
-  position: absolute;
-  left: calc(var(--space-5) + 10px);
-  top: 0;
-  bottom: var(--space-4);
-  width: 1px;
-  background: var(--color-border);
+  margin-left: 48px;
+  padding: var(--space-2) 0;
+  border-left: 2px solid var(--color-border);
+  border-radius: 0 0 var(--radius-md) 0;
 }
 
 /* Subtask styles */
@@ -4637,18 +4629,6 @@ table tbody tr:nth-child(even) {
   background: transparent;
   border-bottom: none;
   padding: var(--space-3) var(--space-4);
-  margin-left: var(--space-4);
-  position: relative;
-}
-
-.todo-item.subtask::before {
-  content: '';
-  position: absolute;
-  left: calc(-1 * var(--space-4));
-  top: 50%;
-  width: var(--space-3);
-  height: 1px;
-  background: var(--color-border);
 }
 
 .todo-item.subtask .todo-title {
