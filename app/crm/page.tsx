@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 
 // Types for contact/dossier data
 interface SocialProfile {
@@ -261,11 +262,14 @@ export default function CRMPage() {
 
     return (
         <div className="animate-fadeIn">
-            <div className="page-header">
+            <div className="page-header flex justify-between items-center">
                 <div>
                     <h1 className="page-title">CRM & Dossier Creator</h1>
                     <p className="page-subtitle">Build rich contact profiles from email addresses using Firecrawl</p>
                 </div>
+                <Link href="/crm/partners-clients" className="btn btn-secondary">
+                    🤝 Partners & Clients
+                </Link>
             </div>
 
             {/* CRM To-Dos Section */}
