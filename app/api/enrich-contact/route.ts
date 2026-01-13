@@ -1,24 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
+import OpenAI from 'openai';
 
-// Contact data shape from Firecrawl extraction
+// Contact data shape from AI extraction
 interface ExtractedContactData {
-    name?: string;
-    bio?: string;
-    location?: string;
-    avatar?: string;
-    company?: {
-        name?: string;
-        role?: string;
-        website?: string;
-        industry?: string;
+    name: string;
+    bio: string;
+    location: string;
+    avatar: string;
+    company: {
+        name: string;
+        role: string;
+        website: string;
+        industry: string;
     };
-    socialProfiles?: Array<{
+    socialProfiles: Array<{
         platform: string;
         url: string;
         username: string;
     }>;
-    recentActivity?: string[];
+    recentActivity: string[];
 }
 
 export async function POST(request: NextRequest) {
@@ -39,26 +40,65 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Initialize Firecrawl client
+        if (!process.env.OPENAI_API_KEY) {
+            return NextResponse.json(
+                { error: 'OpenAI API key not configured' },
+                { status: 500 }
+            );
+        }
+
+        // Initialize clients
         const firecrawl = new FirecrawlApp({
             apiKey: process.env.FIRECRAWL_API_KEY,
         });
 
-        // Extract domain from email for company lookup
-        const emailDomain = email.split('@')[1];
-        const companyUrl = `https://${emailDomain}`;
-
-        // Use Firecrawl to scrape the company website
-        const scrapeResult = await firecrawl.scrape(companyUrl, {
-            formats: ['markdown'],
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
         });
 
-        // Check if we got valid content
-        if (!scrapeResult || !scrapeResult.markdown) {
+        // Extract domain and name guess from email
+        const emailDomain = email.split('@')[1];
+        const emailPrefix = email.split('@')[0];
+        const nameParts = emailPrefix.replace(/[._-]/g, ' ').split(' ');
+        const guessedFirstName = nameParts[0]?.charAt(0).toUpperCase() + nameParts[0]?.slice(1) || '';
+        const guessedLastName = nameParts[1]?.charAt(0).toUpperCase() + nameParts[1]?.slice(1) || '';
+        const guessedFullName = `${guessedFirstName} ${guessedLastName}`.trim();
+
+        // URLs to scrape for information about the person
+        const urlsToTry = [
+            `https://${emailDomain}`,
+            `https://${emailDomain}/about`,
+            `https://${emailDomain}/team`,
+            `https://${emailDomain}/about-us`,
+            `https://${emailDomain}/our-team`,
+        ];
+
+        // Scrape multiple pages for more context
+        let allContent = '';
+        let companyMetadata: { title?: string; description?: string; ogImage?: string } = {};
+
+        for (const url of urlsToTry.slice(0, 3)) { // Limit to 3 to save API calls
+            try {
+                const scrapeResult = await firecrawl.scrape(url, {
+                    formats: ['markdown'],
+                });
+
+                if (scrapeResult?.markdown) {
+                    allContent += `\n\n--- Content from ${url} ---\n${scrapeResult.markdown}`;
+                    if (!companyMetadata.title && scrapeResult.metadata) {
+                        companyMetadata = scrapeResult.metadata;
+                    }
+                }
+            } catch {
+                // Skip failed URLs
+                continue;
+            }
+        }
+
+        if (!allContent) {
             return NextResponse.json(
                 {
-                    error: 'Failed to scrape website',
-                    details: 'No content returned from website',
+                    error: 'Could not scrape any content from the domain',
                     contactId,
                     status: 'failed'
                 },
@@ -66,49 +106,108 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Parse the markdown content to extract contact information
-        // This is a simple extraction - in production you might use an LLM
-        const markdown = scrapeResult.markdown;
-        const metadata = scrapeResult.metadata || {};
+        // Use OpenAI to extract person information from the content
+        const extraction = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            response_format: { type: 'json_object' },
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are an expert at extracting contact information from website content. 
+                    You will receive scraped content from a company website and an email address.
+                    Your job is to find information about the person with that email or guess based on available info.
+                    
+                    Return a JSON object with these fields:
+                    - name: Full name of the person (use the email hint if you can't find them)
+                    - bio: Brief professional bio or description
+                    - location: Their location if mentioned
+                    - role: Their job title/role at the company
+                    - companyName: The company name
+                    - industry: The company's industry
+                    - linkedinUrl: LinkedIn profile URL if found
+                    - twitterUrl: Twitter/X profile URL if found
+                    - recentActivity: Array of recent posts, achievements, or activities (up to 3)
+                    
+                    If you can't find specific info, make reasonable inferences from the company context.
+                    For name, prefer any name you find in the content that could match the email prefix.`
+                },
+                {
+                    role: 'user',
+                    content: `Email: ${email}
+Email name hint: ${guessedFullName}
 
-        // Extract basic info from scraped content
-        const extractedData: ExtractedContactData = {
-            name: '', // Will need manual input or LLM extraction
-            bio: metadata.description || '',
-            location: '',
-            avatar: metadata.ogImage || '',
-            company: {
-                name: metadata.title || emailDomain,
-                role: '',
-                website: companyUrl,
-                industry: '',
-            },
-            socialProfiles: extractSocialProfiles(markdown),
-            recentActivity: [],
+Website Content (truncated to key sections):
+${allContent.slice(0, 12000)}`
+                }
+            ],
+            temperature: 0.3,
+        });
+
+        const aiResponse = extraction.choices[0]?.message?.content;
+        if (!aiResponse) {
+            throw new Error('No response from OpenAI');
+        }
+
+        const parsed = JSON.parse(aiResponse) as {
+            name?: string;
+            bio?: string;
+            location?: string;
+            role?: string;
+            companyName?: string;
+            industry?: string;
+            linkedinUrl?: string;
+            twitterUrl?: string;
+            recentActivity?: string[];
         };
+
+        // Build social profiles array
+        const socialProfiles: ExtractedContactData['socialProfiles'] = [];
+        if (parsed.linkedinUrl) {
+            const usernameMatch = parsed.linkedinUrl.match(/linkedin\.com\/(?:in|company)\/([^\/\?]+)/);
+            socialProfiles.push({
+                platform: 'LinkedIn',
+                url: parsed.linkedinUrl,
+                username: usernameMatch?.[1] || '',
+            });
+        }
+        if (parsed.twitterUrl) {
+            const usernameMatch = parsed.twitterUrl.match(/(?:twitter|x)\.com\/([^\/\?]+)/);
+            socialProfiles.push({
+                platform: 'Twitter/X',
+                url: parsed.twitterUrl,
+                username: usernameMatch?.[1] || '',
+            });
+        }
+
+        // Also extract any social profiles from the raw content
+        const additionalProfiles = extractSocialProfiles(allContent);
+        for (const profile of additionalProfiles) {
+            if (!socialProfiles.some(p => p.platform === profile.platform)) {
+                socialProfiles.push(profile);
+            }
+        }
 
         // Structure the enriched data
         const enrichedData = {
             contactId,
-            name: extractedData.name || '',
-            bio: extractedData.bio || '',
-            location: extractedData.location || '',
-            avatar: extractedData.avatar || '',
+            name: parsed.name || guessedFullName || '',
+            bio: parsed.bio || companyMetadata.description || '',
+            location: parsed.location || '',
+            avatar: companyMetadata.ogImage || '',
             company: {
-                name: extractedData.company?.name || '',
-                role: extractedData.company?.role || '',
-                website: extractedData.company?.website || companyUrl,
-                industry: extractedData.company?.industry || '',
+                name: parsed.companyName || companyMetadata.title || emailDomain,
+                role: parsed.role || '',
+                website: `https://${emailDomain}`,
+                industry: parsed.industry || '',
             },
-            socialProfiles: extractedData.socialProfiles || [],
-            recentActivity: extractedData.recentActivity || [],
+            socialProfiles,
+            recentActivity: parsed.recentActivity || [],
             status: 'enriched' as const,
-            rawContent: markdown.slice(0, 2000), // Include some content for context
         };
 
         return NextResponse.json(enrichedData);
     } catch (error) {
-        console.error('Firecrawl enrichment error:', error);
+        console.error('Enrichment error:', error);
         return NextResponse.json(
             {
                 error: 'Internal server error',
