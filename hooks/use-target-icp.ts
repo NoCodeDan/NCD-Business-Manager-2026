@@ -261,6 +261,7 @@ export function useActiveICPsByBusiness() {
         "tangible-ideas": activeICPs?.filter((icp) => icp.business === "tangible-ideas") || [],
         "no-code-effect": activeICPs?.filter((icp) => icp.business === "no-code-effect") || [],
         adalo: activeICPs?.filter((icp) => icp.business === "adalo") || [],
+        "no-code-dan": activeICPs?.filter((icp) => icp.business === "no-code-dan") || [],
     };
 
     return {

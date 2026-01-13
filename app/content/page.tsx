@@ -12,7 +12,7 @@ const contentModules = [
                 <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
         ),
-        color: '#f59e0b',
+        color: 'var(--color-accent-warning)', // #f59e0b
         stats: '12 ideas this week',
     },
     {
@@ -26,7 +26,7 @@ const contentModules = [
                 <path d="M8 11h8" />
             </svg>
         ),
-        color: '#6366f1',
+        color: 'var(--color-accent-primary)', // #6366f1
         stats: '47 ideas saved',
     },
     {
@@ -40,7 +40,7 @@ const contentModules = [
                 <path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4" />
             </svg>
         ),
-        color: '#8b5cf6',
+        color: 'var(--color-accent-secondary)', // #8b5cf6
         stats: '5 formats available',
     },
     {
@@ -56,7 +56,7 @@ const contentModules = [
                 <path d="m9 16 2 2 4-4" />
             </svg>
         ),
-        color: '#10b981',
+        color: 'var(--color-accent-success)', // #10b981
         stats: '8 scheduled this month',
     },
 ];

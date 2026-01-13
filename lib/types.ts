@@ -379,8 +379,8 @@ export const CONTENT_COLORS = [
   '#3b82f6', // Blue
 ];
 
-// ICP Business Areas (subset of BusinessArea - no personal-brand)
-export type ICPBusinessArea = 'tangible-ideas' | 'no-code-effect' | 'adalo';
+// ICP Business Areas (subset of BusinessArea - includes personal brand for NCD)
+export type ICPBusinessArea = 'tangible-ideas' | 'no-code-effect' | 'adalo' | 'no-code-dan';
 
 // Operating Rules
 export type RuleType =

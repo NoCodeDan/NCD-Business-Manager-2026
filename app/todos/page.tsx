@@ -188,7 +188,7 @@ export default function TodosPage() {
                             </svg>
                         </button>
                     )}
-                    {!isSubtask && !hasSubtasks && <div style={{ width: '14px' }} />}
+                    {!isSubtask && !hasSubtasks && <div style={{ width: '16px' }} />}
 
                     <button
                         className="todo-checkbox"
@@ -196,8 +196,8 @@ export default function TodosPage() {
                         style={{
                             borderColor: todo.completed ? 'var(--color-accent-success)' : getPriorityColor(todo.priority),
                             background: todo.completed ? 'var(--color-accent-success)' : 'transparent',
-                            width: isSubtask ? '18px' : '22px',
-                            height: isSubtask ? '18px' : '22px',
+                            width: isSubtask ? '16px' : '20px',
+                            height: isSubtask ? '16px' : '20px',
                         }}
                     >
                         {todo.completed && (

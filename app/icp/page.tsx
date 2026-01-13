@@ -25,12 +25,14 @@ export default function ICPPage() {
         "tangible-ideas": "Tangible Ideas",
         "no-code-effect": "No-Code Effect",
         adalo: "Adalo",
+        "no-code-dan": "No-Code Dan",
     };
 
     const businessColors = {
         "tangible-ideas": "#8b5cf6",
         "no-code-effect": "#ec4899",
         adalo: "#6366f1",
+        "no-code-dan": "#10b981",
     };
 
     const icpsToShow =
@@ -105,6 +107,14 @@ export default function ICPPage() {
                 >
                     <span className="quarter-label">
                         No-Code Effect ({groupedByBusiness["no-code-effect"].length})
+                    </span>
+                </button>
+                <button
+                    className={`quarter-tab ${activeTab === "no-code-dan" ? "active" : ""}`}
+                    onClick={() => setActiveTab("no-code-dan")}
+                >
+                    <span className="quarter-label">
+                        No-Code Dan ({groupedByBusiness["no-code-dan"].length})
                     </span>
                 </button>
             </div>

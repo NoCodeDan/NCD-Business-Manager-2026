@@ -141,14 +141,14 @@ export default function ProjectDetailPage() {
                                         borderRadius: 'var(--radius-md)',
                                     }}
                                 >
-                                    <label className="flex items-center" style={{ cursor: 'pointer', gap: '12px' }}>
+                                    <label className="flex items-center" style={{ cursor: 'pointer', gap: 'var(--space-3)' }}>
                                         <input
                                             type="checkbox"
                                             checked={task.completed}
                                             onChange={() => toggleTask(projectId, task.id)}
                                             style={{
-                                                width: '18px',
-                                                height: '18px',
+                                                width: '16px',
+                                                height: '16px',
                                                 accentColor: 'var(--color-accent-primary)',
                                                 flexShrink: 0,
                                             }}

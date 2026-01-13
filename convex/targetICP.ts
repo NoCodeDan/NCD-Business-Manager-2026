@@ -34,7 +34,8 @@ export const getByBusiness = query({
         business: v.union(
             v.literal("tangible-ideas"),
             v.literal("no-code-effect"),
-            v.literal("adalo")
+            v.literal("adalo"),
+            v.literal("no-code-dan")
         ),
     },
     handler: async (ctx, args) => {
@@ -62,7 +63,8 @@ export const getActiveByBusiness = query({
         business: v.union(
             v.literal("tangible-ideas"),
             v.literal("no-code-effect"),
-            v.literal("adalo")
+            v.literal("adalo"),
+            v.literal("no-code-dan")
         ),
     },
     handler: async (ctx, args) => {
@@ -83,7 +85,8 @@ export const search = query({
             v.union(
                 v.literal("tangible-ideas"),
                 v.literal("no-code-effect"),
-                v.literal("adalo")
+                v.literal("adalo"),
+                v.literal("no-code-dan")
             )
         ),
         isActive: v.optional(v.boolean()),
@@ -136,7 +139,8 @@ export const create = mutation({
         business: v.union(
             v.literal("tangible-ideas"),
             v.literal("no-code-effect"),
-            v.literal("adalo")
+            v.literal("adalo"),
+            v.literal("no-code-dan")
         ),
         name: v.string(),
         description: v.string(),
@@ -362,6 +366,7 @@ export const getICPSummary = query({
                 "tangible-ideas": 0,
                 "no-code-effect": 0,
                 adalo: 0,
+                "no-code-dan": 0,
             },
             totalCharacteristics: 0,
             totalPainPoints: 0,

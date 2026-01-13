@@ -44,6 +44,68 @@ export default defineSchema({
         updatedAt: v.string(),
     }),
 
+    // ==========================================
+    // REVENUE TRACKING TABLES
+    // ==========================================
+
+    // Deals - Track potential and closed revenue
+    deals: defineTable({
+        name: v.string(),
+        client: v.string(),
+        amount: v.number(),
+        status: v.union(
+            v.literal("lead"),
+            v.literal("proposal"),
+            v.literal("negotiation"),
+            v.literal("won"),
+            v.literal("lost")
+        ),
+        businessArea: v.union(
+            v.literal("tangible-ideas"),
+            v.literal("no-code-effect"),
+            v.literal("adalo"),
+            v.literal("no-code-dan"),
+            v.literal("other")
+        ),
+        probability: v.optional(v.number()), // 0-100
+        expectedCloseDate: v.optional(v.string()),
+        closedDate: v.optional(v.string()),
+        notes: v.optional(v.string()),
+        createdAt: v.string(),
+        updatedAt: v.string(),
+    }).index("by_status", ["status"])
+        .index("by_business_area", ["businessArea"]),
+
+    // Invoices - Track actual received payments
+    invoices: defineTable({
+        invoiceNumber: v.string(),
+        client: v.string(),
+        amount: v.number(),
+        status: v.union(
+            v.literal("draft"),
+            v.literal("sent"),
+            v.literal("paid"),
+            v.literal("overdue"),
+            v.literal("cancelled")
+        ),
+        businessArea: v.union(
+            v.literal("tangible-ideas"),
+            v.literal("no-code-effect"),
+            v.literal("adalo"),
+            v.literal("no-code-dan"),
+            v.literal("other")
+        ),
+        issueDate: v.string(),
+        dueDate: v.string(),
+        paidDate: v.optional(v.string()),
+        description: v.optional(v.string()),
+        dealId: v.optional(v.id("deals")), // Link to deal if applicable
+        createdAt: v.string(),
+        updatedAt: v.string(),
+    }).index("by_status", ["status"])
+        .index("by_business_area", ["businessArea"])
+        .index("by_deal", ["dealId"]),
+
     initiatives: defineTable({
         name: v.string(),
         description: v.string(),
@@ -374,7 +436,8 @@ export default defineSchema({
         business: v.union(
             v.literal("tangible-ideas"),
             v.literal("no-code-effect"),
-            v.literal("adalo")
+            v.literal("adalo"),
+            v.literal("no-code-dan")
         ),
         name: v.string(),
         description: v.string(),

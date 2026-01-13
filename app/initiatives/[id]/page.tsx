@@ -282,7 +282,7 @@ export default function InitiativeDetailPage({ params }: { params: Promise<{ id:
                                                 className="kpi-progress-fill"
                                                 style={{
                                                     width: `${progress}%`,
-                                                    backgroundColor: progress >= 100 ? '#22c55e' : progress >= 70 ? '#eab308' : '#ef4444',
+                                                    backgroundColor: progress >= 100 ? 'var(--color-accent-success)' : progress >= 70 ? 'var(--color-accent-warning)' : 'var(--color-accent-danger)',
                                                 }}
                                             />
                                         </div>
