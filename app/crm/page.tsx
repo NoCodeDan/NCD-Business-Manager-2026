@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useContacts, useContactsNeedingFollowUp, useCreateContact, useClearFollowUp, Contact } from '../../hooks/use-contacts';
+import { useContacts, useContactsNeedingFollowUp, useCreateContact, useClearFollowUp, useEnrichContact, Contact } from '../../hooks/use-contacts';
 import { Id } from '../../convex/_generated/dataModel';
 
 export default function CRMPage() {
@@ -14,7 +14,10 @@ export default function CRMPage() {
     const [emailInput, setEmailInput] = useState('');
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isEnriching, setIsEnriching] = useState(false);
+    const [enrichError, setEnrichError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const enrichContact = useEnrichContact();
 
     // Get contacts that need follow-up (sorted by urgency)
     const followUpContacts = useMemo(() => {
@@ -352,23 +355,63 @@ export default function CRMPage() {
                 <div
                     className="modal-overlay"
                     onClick={() => setSelectedContact(null)}
+                    style={{ animation: 'fadeIn 0.2s ease-out' }}
                 >
                     <div
                         className="modal"
                         onClick={(e) => e.stopPropagation()}
-                        style={{ maxWidth: '600px' }}
+                        style={{
+                            animation: 'slideUp 0.3s ease-out',
+                            maxWidth: '480px',
+                        }}
                     >
                         <div className="modal-header">
-                            <h2 className="modal-title">Contact Details</h2>
-                            <button
-                                onClick={() => setSelectedContact(null)}
-                                className="btn-icon"
-                                aria-label="Close modal"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M18 6 6 18M6 6l12 12" />
-                                </svg>
-                            </button>
+                            <h2 className="modal-title">Contact Profile</h2>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={async () => {
+                                        if (!selectedContact) return;
+                                        setIsEnriching(true);
+                                        setEnrichError(null);
+                                        try {
+                                            await enrichContact(selectedContact._id, selectedContact.email);
+                                            // Refresh the selected contact from the updated list
+                                            setSelectedContact(null);
+                                        } catch (error) {
+                                            setEnrichError(error instanceof Error ? error.message : 'Enrichment failed');
+                                        } finally {
+                                            setIsEnriching(false);
+                                        }
+                                    }}
+                                    className="btn btn-secondary"
+                                    style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 'var(--text-sm)' }}
+                                    disabled={isEnriching}
+                                >
+                                    {isEnriching ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}>
+                                            <circle cx="12" cy="12" r="10" opacity="0.3" />
+                                            <path d="M12 2a10 10 0 0 1 10 10" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                            <path d="M3 3v5h5" />
+                                            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                                            <path d="M16 21h5v-5" />
+                                        </svg>
+                                    )}
+                                    {isEnriching ? 'Enriching...' : 'Refresh with AI'}
+                                </button>
+                                <button
+                                    onClick={() => setSelectedContact(null)}
+                                    className="btn-icon"
+                                    aria-label="Close modal"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M18 6 6 18M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div style={{ padding: 'var(--space-6)' }}>
@@ -397,34 +440,11 @@ export default function CRMPage() {
                                     }}>
                                         {selectedContact.name || 'Pending...'}
                                     </h3>
-                                    <p className="text-muted">{selectedContact.email}</p>
-                                    <span className={`badge ${getStatusBadge(selectedContact.status)}`} style={{ marginTop: 'var(--space-2)' }}>
-                                        {selectedContact.status}
-                                    </span>
+                                    <p className="text-muted">
+                                        {selectedContact.company.role ? `${selectedContact.company.role} at ` : ''}{selectedContact.company.name || selectedContact.email}
+                                    </p>
                                 </div>
                             </div>
-
-                            {/* Company Info */}
-                            {selectedContact.company.name && (
-                                <div className="mb-5">
-                                    <h4 style={{
-                                        fontSize: 'var(--text-sm)',
-                                        fontWeight: 600,
-                                        color: 'var(--color-text-secondary)',
-                                        marginBottom: 'var(--space-2)',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.5px',
-                                    }}>
-                                        Company
-                                    </h4>
-                                    <p style={{ color: 'var(--color-text-primary)' }}>
-                                        {selectedContact.company.role} at {selectedContact.company.name}
-                                    </p>
-                                    {selectedContact.company.industry && (
-                                        <p className="text-sm text-muted">{selectedContact.company.industry}</p>
-                                    )}
-                                </div>
-                            )}
 
                             {/* Bio */}
                             {selectedContact.bio && (
@@ -459,52 +479,43 @@ export default function CRMPage() {
                                 </div>
                             )}
 
-                            {/* Recent Activity */}
-                            {selectedContact.recentActivity.length > 0 && (
-                                <div className="mb-5">
-                                    <h4 style={{
-                                        fontSize: 'var(--text-sm)',
-                                        fontWeight: 600,
-                                        color: 'var(--color-text-secondary)',
-                                        marginBottom: 'var(--space-2)',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.5px',
-                                    }}>
-                                        Recent Activity
-                                    </h4>
-                                    <ul style={{ paddingLeft: 'var(--space-4)' }}>
-                                        {selectedContact.recentActivity.map((activity, idx) => (
-                                            <li key={idx} className="text-sm" style={{ color: 'var(--color-text-primary)', marginBottom: 'var(--space-1)' }}>
-                                                {activity}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
+                            {/* Contact Actions */}
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 'var(--space-3)',
+                                marginTop: 'var(--space-5)',
+                                paddingTop: 'var(--space-5)',
+                                borderTop: '1px solid var(--color-border)',
+                            }}>
+                                <a
+                                    href={`mailto:${selectedContact.email}`}
+                                    className="btn btn-primary"
+                                    style={{ justifyContent: 'center' }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                    </svg>
+                                    Email {selectedContact.name.split(' ')[0] || 'Contact'}
+                                </a>
 
-                            {/* Social Links */}
-                            {selectedContact.socialProfiles.length > 0 && (
-                                <div style={{
-                                    display: 'flex',
-                                    gap: 'var(--space-3)',
-                                    marginTop: 'var(--space-5)',
-                                    paddingTop: 'var(--space-5)',
-                                    borderTop: '1px solid var(--color-border)',
-                                }}>
-                                    {selectedContact.socialProfiles.map((profile, idx) => (
-                                        <a
-                                            key={idx}
-                                            href={profile.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="btn btn-secondary"
-                                        >
-                                            {getPlatformIcon(profile.platform)}
-                                            {profile.platform}
-                                        </a>
-                                    ))}
-                                </div>
-                            )}
+                                {selectedContact.socialProfiles.map((profile, idx) => (
+                                    <a
+                                        key={idx}
+                                        href={profile.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-secondary"
+                                        style={{ justifyContent: 'center' }}
+                                    >
+                                        {getPlatformIcon(profile.platform)}
+                                        {profile.platform === 'LinkedIn' ? 'Connect on LinkedIn' :
+                                            profile.platform.toLowerCase().includes('twitter') || profile.platform.toLowerCase() === 'x' ? 'Follow on X' :
+                                                `View ${profile.platform}`}
+                                    </a>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

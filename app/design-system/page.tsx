@@ -359,6 +359,54 @@ export default function DesignSystemPage() {
                 </div>
             </section>
 
+            {/* Modal Pattern Section */}
+            <section style={{ marginBottom: 'var(--space-12)' }}>
+                <h2 style={{ marginBottom: 'var(--space-6)' }}>Modal Pattern</h2>
+
+                <div className="card" style={{ borderLeft: '4px solid var(--color-accent-success)' }}>
+                    <h3 style={{ marginBottom: 'var(--space-3)' }}>✅ Preferred Modal Style</h3>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
+                        Contact/Profile popup modals should follow this pattern (as seen on Partners page):
+                    </p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)', marginBottom: 'var(--space-4)' }}>
+                        <div>
+                            <h5 style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Structure</h5>
+                            <ul style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', paddingLeft: 'var(--space-4)' }}>
+                                <li>Max-width: <code>480px</code></li>
+                                <li>Animations: <code>fadeIn</code> overlay, <code>slideUp</code> modal</li>
+                                <li>Header: Title + close button</li>
+                                <li>Content padding: <code>var(--space-6)</code></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Layout</h5>
+                            <ul style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', paddingLeft: 'var(--space-4)' }}>
+                                <li>72px avatar with gradient background</li>
+                                <li>Name + role/company subtitle</li>
+                                <li>Optional: Bio, Location sections</li>
+                                <li>Bottom: Full-width action buttons (stacked)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style={{ background: 'var(--color-bg-tertiary)', padding: 'var(--space-4)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-4)' }}>
+                        <h5 style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Action Button Pattern</h5>
+                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+                            Actions appear at bottom, separated by border. Primary action (Email) first as <code>.btn-primary</code>,
+                            followed by social links as <code>.btn-secondary</code>. All buttons are full-width with <code>justify-content: center</code>.
+                        </p>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+                        <code style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>.modal-overlay</code>
+                        <code style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>.modal</code>
+                        <code style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>.modal-header</code>
+                        <code style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>.modal-title</code>
+                    </div>
+                </div>
+            </section>
+
             {/* Utility Classes Section */}
             <section style={{ marginBottom: 'var(--space-12)' }}>
                 <h2 style={{ marginBottom: 'var(--space-6)' }}>Utility Classes</h2>
