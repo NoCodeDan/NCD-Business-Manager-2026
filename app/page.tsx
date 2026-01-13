@@ -330,7 +330,7 @@ export default function Dashboard() {
                 <p className="text-muted text-sm">All caught up! 🎉</p>
               ) : (
                 pendingTodos.map((todo) => (
-                  <div key={todo._id} className="flex items-start gap-3">
+                  <div key={todo.id} className="flex items-start gap-3">
                     <CheckSquare
                       style={{
                         width: '16px',
