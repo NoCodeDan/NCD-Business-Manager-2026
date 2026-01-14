@@ -4,29 +4,98 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
 
-// Types
+// Types - Enhanced Dossier Format
+export type RelationshipType = "lead" | "client" | "partner" | "collaborator" | "creator" | "investor";
+export type ContactStatus = "warm" | "active" | "dormant";
+export type FitScore = "1" | "2" | "3" | "4" | "5";
+export type StuckArea = "speed" | "distribution" | "tech" | "design" | "monetization";
+export type InteractionType = "dm" | "email" | "call" | "comment" | "collab";
+export type DecisionMaker = "yes" | "influencer" | "no";
+export type CommunicationPref = "dm" | "email" | "async";
+
 export interface Contact {
     _id: Id<"contacts">;
+
+    // Section 1: Identity & Context
     name: string;
+    preferredName?: string;
     email: string;
-    bio?: string;
-    location?: string;
     avatar?: string;
+    location?: string;
+    timezone?: string;
+    relationshipType?: RelationshipType;
+    firstTouchSource?: string;
+
+    // Section 2: Social & Online Presence
+    website?: string;
+    primaryPlatform?: string;
+    socialProfiles: Array<{
+        platform: string;
+        url: string;
+        username: string;
+        isPrimary?: boolean;
+    }>;
+    newsletter?: string;
+    github?: string;
+
+    // Section 3: Work & Credibility
     company: {
         name: string;
         role: string;
         website?: string;
         industry?: string;
+        description?: string;
     };
-    socialProfiles: Array<{
-        platform: string;
-        url: string;
-        username: string;
-    }>;
+    bio?: string;
+    previousRoles?: string[];
+    productsBuilt?: string[];
+    audienceSize?: string;
+    notableLogos?: string[];
+
+    // Section 4: Current Focus
+    currentProjects?: string[];
+    activeLaunch?: {
+        active: boolean;
+        url?: string;
+        name?: string;
+    };
+    publicProblems?: string[];
+    statedGoals?: string[];
     recentActivity: string[];
-    status: "pending" | "enriched" | "failed";
+
+    // Section 5: Pain Points
+    statedPainPoints?: string[];
+    inferredPainPoints?: string[];
+    stuckAreas?: StuckArea[];
+    knownTools?: string[];
+
+    // Section 6: Relationship History
+    firstInteractionDate?: string;
+    lastInteractionDate?: string;
+    interactionTypes?: InteractionType[];
+    conversationNotes?: string;
+    personalContext?: string;
+
+    // Section 7: Fit & Offers
+    relevantOffers?: string[];
+    fitScore?: FitScore;
+    buyingSignals?: string[];
+    objections?: string[];
+
+    // Section 8: Next Action
+    nextStep?: string;
     followUpDate?: string;
     followUpNote?: string;
+    contactStatus?: ContactStatus;
+
+    // Power Fields
+    isDecisionMaker?: DecisionMaker;
+    budgetRange?: string;
+    timelineUrgency?: string;
+    communicationPreference?: CommunicationPref;
+
+    // System Fields
+    status: "pending" | "enriched" | "failed";
     brandPartnerId?: Id<"brandPartners">;
     createdAt: string;
     updatedAt: string;
@@ -89,7 +158,6 @@ export function useEnrichContact() {
             const data = await response.json();
 
             if (!response.ok) {
-                // Update contact status to failed
                 await updateContact({
                     id: contactId,
                     status: 'failed',
@@ -97,16 +165,37 @@ export function useEnrichContact() {
                 throw new Error(data.error || 'Enrichment failed');
             }
 
-            // Update contact with enriched data
+            // Update contact with all enriched dossier data
             await updateContact({
                 id: contactId,
+                // Identity
                 name: data.name || undefined,
                 bio: data.bio || undefined,
                 location: data.location || undefined,
+                timezone: data.timezone || undefined,
                 avatar: data.avatar || undefined,
+                // Company
                 company: data.company,
+                // Social
+                website: data.website || undefined,
+                primaryPlatform: data.primaryPlatform || undefined,
                 socialProfiles: data.socialProfiles,
-                recentActivity: data.recentActivity,
+                newsletter: data.newsletter || undefined,
+                github: data.github || undefined,
+                // Credibility
+                previousRoles: data.previousRoles?.length ? data.previousRoles : undefined,
+                productsBuilt: data.productsBuilt?.length ? data.productsBuilt : undefined,
+                audienceSize: data.audienceSize || undefined,
+                notableLogos: data.notableLogos?.length ? data.notableLogos : undefined,
+                // Focus
+                currentProjects: data.currentProjects?.length ? data.currentProjects : undefined,
+                activeLaunch: data.activeLaunch || undefined,
+                publicProblems: data.publicProblems?.length ? data.publicProblems : undefined,
+                statedGoals: data.statedGoals?.length ? data.statedGoals : undefined,
+                recentActivity: data.recentActivity || [],
+                // Tools
+                knownTools: data.knownTools?.length ? data.knownTools : undefined,
+                // System
                 status: 'enriched',
             });
 

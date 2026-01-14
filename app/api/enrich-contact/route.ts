@@ -2,24 +2,43 @@ import { NextRequest, NextResponse } from 'next/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import OpenAI from 'openai';
 
-// Contact data shape from AI extraction
-interface ExtractedContactData {
+// Enhanced dossier data shape from AI extraction
+interface ExtractedDossierData {
+    // Identity
     name: string;
     bio: string;
     location: string;
-    avatar: string;
-    company: {
-        name: string;
-        role: string;
-        website: string;
-        industry: string;
-    };
-    socialProfiles: Array<{
-        platform: string;
-        url: string;
-        username: string;
-    }>;
-    recentActivity: string[];
+    timezone?: string;
+
+    // Company
+    companyName: string;
+    role: string;
+    companyDescription: string;
+    industry: string;
+
+    // Social
+    website?: string;
+    linkedinUrl?: string;
+    twitterUrl?: string;
+    newsletterUrl?: string;
+    githubUrl?: string;
+    primaryPlatform?: string;
+
+    // Credibility
+    previousRoles?: string[];
+    productsBuilt?: string[];
+    audienceSize?: string;
+    notableLogos?: string[];
+
+    // Current Focus
+    currentProjects?: string[];
+    activeLaunch?: { active: boolean; url?: string; name?: string };
+    publicProblems?: string[];
+    statedGoals?: string[];
+    recentActivity?: string[];
+
+    // Tools
+    knownTools?: string[];
 }
 
 export async function POST(request: NextRequest) {
@@ -77,7 +96,7 @@ export async function POST(request: NextRequest) {
         let allContent = '';
         let companyMetadata: { title?: string; description?: string; ogImage?: string } = {};
 
-        for (const url of urlsToTry.slice(0, 3)) { // Limit to 3 to save API calls
+        for (const url of urlsToTry.slice(0, 3)) {
             try {
                 const scrapeResult = await firecrawl.scrape(url, {
                     formats: ['markdown'],
@@ -90,7 +109,6 @@ export async function POST(request: NextRequest) {
                     }
                 }
             } catch {
-                // Skip failed URLs
                 continue;
             }
         }
@@ -106,41 +124,66 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Use OpenAI to extract person information from the content
+        // Enhanced OpenAI extraction for comprehensive dossier
         const extraction = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             response_format: { type: 'json_object' },
             messages: [
                 {
                     role: 'system',
-                    content: `You are an expert at extracting contact information from website content. 
-                    You will receive scraped content from a company website and an email address.
-                    Your job is to find information about the person with that email or guess based on available info.
+                    content: `You are an expert at extracting comprehensive contact dossier information from website content.
                     
-                    Return a JSON object with these fields:
-                    - name: Full name of the person (use the email hint if you can't find them)
-                    - bio: Brief professional bio or description
-                    - location: Their location if mentioned
-                    - role: Their job title/role at the company
-                    - companyName: The company name
-                    - industry: The company's industry
-                    - linkedinUrl: LinkedIn profile URL if found
-                    - twitterUrl: Twitter/X profile URL if found
-                    - recentActivity: Array of recent posts, achievements, or activities (up to 3)
-                    
-                    If you can't find specific info, make reasonable inferences from the company context.
-                    For name, prefer any name you find in the content that could match the email prefix.`
+Extract as much of this information as possible:
+
+IDENTITY:
+- name: Full name of the person
+- bio: Professional bio or summary (2-3 sentences)
+- location: City, state, or country
+- timezone: If location found, infer timezone (e.g., "EST", "PST", "GMT")
+
+COMPANY:
+- companyName: Company or organization name
+- role: Job title or role
+- companyDescription: One sentence describing what the company does
+- industry: Industry or niche (e.g., "SaaS", "No-Code", "Marketing", "AI")
+
+SOCIAL PRESENCE:
+- website: Personal or company website URL
+- linkedinUrl: LinkedIn profile URL if found
+- twitterUrl: Twitter/X profile URL if found
+- newsletterUrl: Newsletter or Substack URL if found
+- githubUrl: GitHub profile URL if found
+- primaryPlatform: Which platform seems to be their main one ("LinkedIn", "Twitter/X", "YouTube", etc.)
+
+CREDIBILITY:
+- previousRoles: Array of notable previous roles or companies (up to 3)
+- productsBuilt: Array of products they've built or shipped (up to 5)
+- audienceSize: Rough audience size if mentioned (e.g., "10K Twitter followers", "50K newsletter")
+- notableLogos: Array of notable companies/logos they've worked with (up to 5)
+
+CURRENT FOCUS:
+- currentProjects: Array of projects they're currently working on (up to 3)
+- activeLaunch: { active: boolean, url: string, name: string } if they have an active launch
+- publicProblems: Array of problems or challenges they discuss publicly (up to 3)
+- statedGoals: Array of goals they've mentioned (growth, hiring, shipping, etc., up to 3)
+- recentActivity: Array of recent public activities or achievements (up to 3)
+
+TOOLS:
+- knownTools: Array of tools or technologies they use or mention (up to 5)
+
+Return a JSON object. For arrays, return empty array [] if no data found. For strings, return empty string "".
+Prefer actual data found in content over guesses. Use the email name hint only if no name is found.`
                 },
                 {
                     role: 'user',
                     content: `Email: ${email}
 Email name hint: ${guessedFullName}
 
-Website Content (truncated to key sections):
-${allContent.slice(0, 12000)}`
+Website Content (truncated):
+${allContent.slice(0, 15000)}`
                 }
             ],
-            temperature: 0.3,
+            temperature: 0.2,
         });
 
         const aiResponse = extraction.choices[0]?.message?.content;
@@ -148,26 +191,18 @@ ${allContent.slice(0, 12000)}`
             throw new Error('No response from OpenAI');
         }
 
-        const parsed = JSON.parse(aiResponse) as {
-            name?: string;
-            bio?: string;
-            location?: string;
-            role?: string;
-            companyName?: string;
-            industry?: string;
-            linkedinUrl?: string;
-            twitterUrl?: string;
-            recentActivity?: string[];
-        };
+        const parsed = JSON.parse(aiResponse) as ExtractedDossierData;
 
-        // Build social profiles array
-        const socialProfiles: ExtractedContactData['socialProfiles'] = [];
+        // Build social profiles array with isPrimary flag
+        const socialProfiles: Array<{ platform: string; url: string; username: string; isPrimary?: boolean }> = [];
+
         if (parsed.linkedinUrl) {
             const usernameMatch = parsed.linkedinUrl.match(/linkedin\.com\/(?:in|company)\/([^\/\?]+)/);
             socialProfiles.push({
                 platform: 'LinkedIn',
                 url: parsed.linkedinUrl,
                 username: usernameMatch?.[1] || '',
+                isPrimary: parsed.primaryPlatform === 'LinkedIn',
             });
         }
         if (parsed.twitterUrl) {
@@ -176,32 +211,58 @@ ${allContent.slice(0, 12000)}`
                 platform: 'Twitter/X',
                 url: parsed.twitterUrl,
                 username: usernameMatch?.[1] || '',
+                isPrimary: parsed.primaryPlatform === 'Twitter/X' || parsed.primaryPlatform === 'Twitter' || parsed.primaryPlatform === 'X',
             });
         }
 
-        // Also extract any social profiles from the raw content
+        // Also extract any social profiles from raw content
         const additionalProfiles = extractSocialProfiles(allContent);
         for (const profile of additionalProfiles) {
             if (!socialProfiles.some(p => p.platform === profile.platform)) {
-                socialProfiles.push(profile);
+                socialProfiles.push({
+                    ...profile,
+                    isPrimary: parsed.primaryPlatform === profile.platform,
+                });
             }
         }
 
-        // Structure the enriched data
+        // Structure the enriched dossier data
         const enrichedData = {
             contactId,
+            // Identity
             name: parsed.name || guessedFullName || '',
             bio: parsed.bio || companyMetadata.description || '',
             location: parsed.location || '',
-            avatar: companyMetadata.ogImage || '',
+            timezone: parsed.timezone || '',
+            // Company
             company: {
                 name: parsed.companyName || companyMetadata.title || emailDomain,
                 role: parsed.role || '',
-                website: `https://${emailDomain}`,
+                website: parsed.website || `https://${emailDomain}`,
                 industry: parsed.industry || '',
+                description: parsed.companyDescription || '',
             },
+            // Social
+            website: parsed.website || `https://${emailDomain}`,
+            primaryPlatform: parsed.primaryPlatform || '',
             socialProfiles,
+            newsletter: parsed.newsletterUrl || '',
+            github: parsed.githubUrl || '',
+            // Credibility
+            avatar: companyMetadata.ogImage || '',
+            previousRoles: parsed.previousRoles || [],
+            productsBuilt: parsed.productsBuilt || [],
+            audienceSize: parsed.audienceSize || '',
+            notableLogos: parsed.notableLogos || [],
+            // Focus
+            currentProjects: parsed.currentProjects || [],
+            activeLaunch: parsed.activeLaunch || undefined,
+            publicProblems: parsed.publicProblems || [],
+            statedGoals: parsed.statedGoals || [],
             recentActivity: parsed.recentActivity || [],
+            // Tools
+            knownTools: parsed.knownTools || [],
+            // System
             status: 'enriched' as const,
         };
 
@@ -222,7 +283,6 @@ ${allContent.slice(0, 12000)}`
 function extractSocialProfiles(markdown: string): Array<{ platform: string; url: string; username: string }> {
     const profiles: Array<{ platform: string; url: string; username: string }> = [];
 
-    // LinkedIn
     const linkedinMatch = markdown.match(/https?:\/\/(www\.)?linkedin\.com\/(?:in|company)\/([a-zA-Z0-9-]+)/);
     if (linkedinMatch) {
         profiles.push({
@@ -232,7 +292,6 @@ function extractSocialProfiles(markdown: string): Array<{ platform: string; url:
         });
     }
 
-    // Twitter/X
     const twitterMatch = markdown.match(/https?:\/\/(www\.)?(twitter|x)\.com\/([a-zA-Z0-9_]+)/);
     if (twitterMatch) {
         profiles.push({
@@ -245,7 +304,6 @@ function extractSocialProfiles(markdown: string): Array<{ platform: string; url:
     return profiles;
 }
 
-// Handle unsupported methods
 export async function GET() {
     return NextResponse.json(
         { error: 'Method not allowed. Use POST.' },

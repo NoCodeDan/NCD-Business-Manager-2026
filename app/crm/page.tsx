@@ -414,7 +414,7 @@ export default function CRMPage() {
                             </div>
                         </div>
 
-                        <div style={{ padding: 'var(--space-6)' }}>
+                        <div style={{ padding: 'var(--space-6)', maxHeight: '70vh', overflowY: 'auto' }}>
                             {/* Profile Header */}
                             <div className="flex items-center gap-4 mb-6">
                                 <div style={{
@@ -428,10 +428,11 @@ export default function CRMPage() {
                                     fontSize: 'var(--text-2xl)',
                                     fontWeight: 700,
                                     color: 'white',
+                                    flexShrink: 0,
                                 }}>
                                     {selectedContact.name.charAt(0).toUpperCase() || '?'}
                                 </div>
-                                <div>
+                                <div style={{ flex: 1 }}>
                                     <h3 style={{
                                         fontSize: 'var(--text-xl)',
                                         fontWeight: 600,
@@ -439,43 +440,148 @@ export default function CRMPage() {
                                         marginBottom: 'var(--space-1)',
                                     }}>
                                         {selectedContact.name || 'Pending...'}
+                                        {selectedContact.preferredName && (
+                                            <span style={{ fontWeight: 400, color: 'var(--color-text-muted)', marginLeft: '8px' }}>
+                                                ({selectedContact.preferredName})
+                                            </span>
+                                        )}
                                     </h3>
                                     <p className="text-muted">
                                         {selectedContact.company.role ? `${selectedContact.company.role} at ` : ''}{selectedContact.company.name || selectedContact.email}
                                     </p>
+                                    <div className="flex items-center gap-2 mt-2">
+                                        {selectedContact.relationshipType && (
+                                            <span className="badge badge-primary" style={{ textTransform: 'capitalize' }}>
+                                                {selectedContact.relationshipType}
+                                            </span>
+                                        )}
+                                        {selectedContact.contactStatus && (
+                                            <span className={`badge ${selectedContact.contactStatus === 'active' ? 'badge-success' : selectedContact.contactStatus === 'warm' ? 'badge-warning' : 'badge-secondary'}`} style={{ textTransform: 'capitalize' }}>
+                                                {selectedContact.contactStatus}
+                                            </span>
+                                        )}
+                                        {selectedContact.fitScore && (
+                                            <span className="badge badge-secondary">
+                                                Fit: {selectedContact.fitScore}/5
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Bio */}
-                            {selectedContact.bio && (
+                            {/* Bio & Location */}
+                            {(selectedContact.bio || selectedContact.location) && (
                                 <div className="mb-5">
-                                    <h4 style={{
-                                        fontSize: 'var(--text-sm)',
-                                        fontWeight: 600,
-                                        color: 'var(--color-text-secondary)',
-                                        marginBottom: 'var(--space-2)',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.5px',
-                                    }}>
-                                        About
-                                    </h4>
-                                    <p style={{
-                                        color: 'var(--color-text-primary)',
-                                        lineHeight: 1.6,
-                                    }}>
-                                        {selectedContact.bio}
-                                    </p>
+                                    {selectedContact.bio && (
+                                        <p style={{ color: 'var(--color-text-primary)', lineHeight: 1.6, marginBottom: 'var(--space-2)' }}>
+                                            {selectedContact.bio}
+                                        </p>
+                                    )}
+                                    {selectedContact.location && (
+                                        <div className="flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--color-text-muted)' }}>
+                                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                                <circle cx="12" cy="10" r="3" />
+                                            </svg>
+                                            <span className="text-muted text-sm">{selectedContact.location}{selectedContact.timezone && ` (${selectedContact.timezone})`}</span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
-                            {/* Location */}
-                            {selectedContact.location && (
-                                <div className="flex items-center gap-2 mb-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-text-muted)' }}>
-                                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                        <circle cx="12" cy="10" r="3" />
-                                    </svg>
-                                    <span className="text-muted">{selectedContact.location}</span>
+                            {/* Company Description */}
+                            {selectedContact.company.description && (
+                                <div className="mb-5" style={{ padding: 'var(--space-3)', background: 'var(--color-bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+                                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                                        <strong>{selectedContact.company.name}:</strong> {selectedContact.company.description}
+                                    </p>
+                                    {selectedContact.company.industry && (
+                                        <span className="badge badge-secondary mt-2">{selectedContact.company.industry}</span>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Credibility Section */}
+                            {(selectedContact.audienceSize || selectedContact.productsBuilt?.length || selectedContact.previousRoles?.length) && (
+                                <div className="mb-5">
+                                    <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        Credibility
+                                    </h4>
+                                    {selectedContact.audienceSize && (
+                                        <p className="text-sm mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                                            📊 <strong>Audience:</strong> {selectedContact.audienceSize}
+                                        </p>
+                                    )}
+                                    {(selectedContact.productsBuilt?.length ?? 0) > 0 && (
+                                        <p className="text-sm mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                                            🚀 <strong>Built:</strong> {selectedContact.productsBuilt?.join(', ')}
+                                        </p>
+                                    )}
+                                    {(selectedContact.previousRoles?.length ?? 0) > 0 && (
+                                        <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                                            💼 <strong>Previous:</strong> {selectedContact.previousRoles?.join(', ')}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Current Focus Section */}
+                            {(selectedContact.currentProjects?.length || selectedContact.statedGoals?.length || selectedContact.activeLaunch?.active) && (
+                                <div className="mb-5">
+                                    <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        Current Focus
+                                    </h4>
+                                    {selectedContact.activeLaunch?.active && (
+                                        <div className="mb-2 p-2" style={{ background: 'rgba(34, 197, 94, 0.1)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                                            <span className="text-sm" style={{ color: 'var(--color-success)' }}>
+                                                🔥 Active Launch: {selectedContact.activeLaunch.name || 'In Progress'}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {(selectedContact.currentProjects?.length ?? 0) > 0 && (
+                                        <p className="text-sm mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                                            <strong>Projects:</strong> {selectedContact.currentProjects?.join(', ')}
+                                        </p>
+                                    )}
+                                    {(selectedContact.statedGoals?.length ?? 0) > 0 && (
+                                        <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                                            <strong>Goals:</strong> {selectedContact.statedGoals?.join(', ')}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Tools & Tech */}
+                            {(selectedContact.knownTools?.length ?? 0) > 0 && (
+                                <div className="mb-5">
+                                    <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                        Tools & Tech
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedContact.knownTools?.map((tool, idx) => (
+                                            <span key={idx} className="badge badge-secondary">{tool}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Next Action */}
+                            {(selectedContact.nextStep || selectedContact.followUpNote) && (
+                                <div className="mb-5" style={{ padding: 'var(--space-3)', background: 'rgba(99, 102, 241, 0.1)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                    <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-accent-primary)', marginBottom: 'var(--space-2)' }}>
+                                        📌 Next Action
+                                    </h4>
+                                    {selectedContact.nextStep && (
+                                        <p className="text-sm mb-1" style={{ color: 'var(--color-text-primary)' }}>{selectedContact.nextStep}</p>
+                                    )}
+                                    {selectedContact.followUpNote && (
+                                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{selectedContact.followUpNote}</p>
+                                    )}
+                                    {selectedContact.followUpDate && (
+                                        <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                                            Due: {new Date(selectedContact.followUpDate).toLocaleDateString()}
+                                        </p>
+                                    )}
                                 </div>
                             )}
 
@@ -510,11 +616,24 @@ export default function CRMPage() {
                                         style={{ justifyContent: 'center' }}
                                     >
                                         {getPlatformIcon(profile.platform)}
+                                        {profile.isPrimary && <span className="badge badge-success ml-2" style={{ fontSize: '0.6rem' }}>Primary</span>}
                                         {profile.platform === 'LinkedIn' ? 'Connect on LinkedIn' :
                                             profile.platform.toLowerCase().includes('twitter') || profile.platform.toLowerCase() === 'x' ? 'Follow on X' :
                                                 `View ${profile.platform}`}
                                     </a>
                                 ))}
+
+                                {selectedContact.website && (
+                                    <a
+                                        href={selectedContact.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-secondary"
+                                        style={{ justifyContent: 'center' }}
+                                    >
+                                        🌐 Visit Website
+                                    </a>
+                                )}
                             </div>
                         </div>
                     </div>

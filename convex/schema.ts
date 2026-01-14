@@ -455,39 +455,157 @@ export default defineSchema({
     }).index("by_business", ["business"])
         .index("by_active", ["isActive"]),
 
-    // CRM Tables
+    // CRM Tables - Enhanced Dossier Format
     contacts: defineTable({
+        // ==========================================
+        // SECTION 1: Identity & Context
+        // ==========================================
         name: v.string(),
+        preferredName: v.optional(v.string()),
         email: v.string(),
-        bio: v.optional(v.string()),
-        location: v.optional(v.string()),
         avatar: v.optional(v.string()),
+        location: v.optional(v.string()),
+        timezone: v.optional(v.string()),
+        relationshipType: v.optional(v.union(
+            v.literal("lead"),
+            v.literal("client"),
+            v.literal("partner"),
+            v.literal("collaborator"),
+            v.literal("creator"),
+            v.literal("investor")
+        )),
+        firstTouchSource: v.optional(v.string()), // X, LinkedIn, intro, cold DM, event, etc.
+
+        // ==========================================
+        // SECTION 2: Social & Online Presence
+        // ==========================================
+        website: v.optional(v.string()),
+        primaryPlatform: v.optional(v.string()), // Mark which platform is their main one
+        socialProfiles: v.array(v.object({
+            platform: v.string(),
+            url: v.string(),
+            username: v.string(),
+            isPrimary: v.optional(v.boolean()),
+        })),
+        newsletter: v.optional(v.string()),
+        github: v.optional(v.string()),
+
+        // ==========================================
+        // SECTION 3: Work & Credibility Snapshot
+        // ==========================================
         company: v.object({
             name: v.string(),
             role: v.string(),
             website: v.optional(v.string()),
             industry: v.optional(v.string()),
+            description: v.optional(v.string()), // 1-sentence company description
         }),
-        socialProfiles: v.array(v.object({
-            platform: v.string(),
-            url: v.string(),
-            username: v.string(),
+        bio: v.optional(v.string()),
+        previousRoles: v.optional(v.array(v.string())),
+        productsBuilt: v.optional(v.array(v.string())),
+        audienceSize: v.optional(v.string()), // e.g., "10K Twitter", "50K newsletter"
+        notableLogos: v.optional(v.array(v.string())), // Press, collabs, clients
+
+        // ==========================================
+        // SECTION 4: Current Focus
+        // ==========================================
+        currentProjects: v.optional(v.array(v.string())),
+        activeLaunch: v.optional(v.object({
+            active: v.boolean(),
+            url: v.optional(v.string()),
+            name: v.optional(v.string()),
         })),
+        publicProblems: v.optional(v.array(v.string())), // Problems they talk about publicly
+        statedGoals: v.optional(v.array(v.string())), // growth, hiring, shipping, monetizing
         recentActivity: v.array(v.string()),
+
+        // ==========================================
+        // SECTION 5: Pain Points & Opportunities
+        // ==========================================
+        statedPainPoints: v.optional(v.array(v.string())), // From posts, calls, DMs
+        inferredPainPoints: v.optional(v.array(v.string())), // Your analysis
+        stuckAreas: v.optional(v.array(v.union(
+            v.literal("speed"),
+            v.literal("distribution"),
+            v.literal("tech"),
+            v.literal("design"),
+            v.literal("monetization")
+        ))),
+        knownTools: v.optional(v.array(v.string())),
+
+        // ==========================================
+        // SECTION 6: Relationship History
+        // ==========================================
+        firstInteractionDate: v.optional(v.string()),
+        lastInteractionDate: v.optional(v.string()),
+        interactionTypes: v.optional(v.array(v.union(
+            v.literal("dm"),
+            v.literal("email"),
+            v.literal("call"),
+            v.literal("comment"),
+            v.literal("collab")
+        ))),
+        conversationNotes: v.optional(v.string()),
+        personalContext: v.optional(v.string()), // Kids, side projects, interests
+
+        // ==========================================
+        // SECTION 7: Offers & Fit Score
+        // ==========================================
+        relevantOffers: v.optional(v.array(v.string())), // Service, product, collab
+        fitScore: v.optional(v.union(
+            v.literal("1"),
+            v.literal("2"),
+            v.literal("3"),
+            v.literal("4"),
+            v.literal("5")
+        )),
+        buyingSignals: v.optional(v.array(v.string())),
+        objections: v.optional(v.array(v.string())),
+
+        // ==========================================
+        // SECTION 8: Next Action
+        // ==========================================
+        nextStep: v.optional(v.string()), // Reply to post, Send DM, Follow up, etc.
+        followUpDate: v.optional(v.string()),
+        followUpNote: v.optional(v.string()),
+        contactStatus: v.optional(v.union(
+            v.literal("warm"),
+            v.literal("active"),
+            v.literal("dormant")
+        )),
+
+        // ==========================================
+        // Optional Power Fields
+        // ==========================================
+        isDecisionMaker: v.optional(v.union(
+            v.literal("yes"),
+            v.literal("influencer"),
+            v.literal("no")
+        )),
+        budgetRange: v.optional(v.string()),
+        timelineUrgency: v.optional(v.string()),
+        communicationPreference: v.optional(v.union(
+            v.literal("dm"),
+            v.literal("email"),
+            v.literal("async")
+        )),
+
+        // ==========================================
+        // System Fields
+        // ==========================================
         status: v.union(
             v.literal("pending"),
             v.literal("enriched"),
             v.literal("failed")
         ),
-        followUpDate: v.optional(v.string()),
-        followUpNote: v.optional(v.string()),
-        // Link to brand partner if this contact is from a partnership
         brandPartnerId: v.optional(v.id("brandPartners")),
         createdAt: v.string(),
         updatedAt: v.string(),
     }).index("by_email", ["email"])
         .index("by_status", ["status"])
-        .index("by_brand_partner", ["brandPartnerId"]),
+        .index("by_brand_partner", ["brandPartnerId"])
+        .index("by_relationship_type", ["relationshipType"])
+        .index("by_contact_status", ["contactStatus"]),
 
     brandPartners: defineTable({
         name: v.string(),
